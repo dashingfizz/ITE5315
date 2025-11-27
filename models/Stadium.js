@@ -7,6 +7,7 @@
 * Student IDs: n01719446, n01675664, n01700360
 * Date: 2025-11-26
 ******************************************************************************/
+
 const mongoose = require('mongoose');
 
 const stadiumSchema = new mongoose.Schema({
