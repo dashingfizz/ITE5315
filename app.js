@@ -13,14 +13,12 @@ const path = require('path');
 const hbs = require('hbs');
 const mongoose = require('mongoose');
 const fs = require('fs');
+const config = require("./config/database");
 
 const app = express();
-const PORT = process.env.PORT || 8000;
 
-// MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://admin:admin@cluster0.0hmpatm.mongodb.net/ProjectDb';
 
-mongoose.connect(MONGODB_URI)
+mongoose.connect(config.url)
 .then(() => console.log('Connected to MongoDB Atlas'))
 .catch(err => console.error('MongoDB connection error:', err));
 
@@ -82,9 +80,9 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`MongoDB: ${MONGODB_URI}`);
+app.listen(config.port, () => {
+    console.log(`Server running on http://localhost:${config.port}`);
+    console.log(`MongoDB: ${config.url}`);
     console.log(`Partials directory: ${partialsDir}`);
 });
 
