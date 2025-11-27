@@ -17,7 +17,6 @@ const config = require("./config/database");
 
 const app = express();
 
-
 mongoose.connect(config.url)
 .then(() => console.log('Connected to MongoDB Atlas'))
 .catch(err => console.error('MongoDB connection error:', err));
