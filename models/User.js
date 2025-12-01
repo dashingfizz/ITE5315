@@ -7,3 +7,41 @@
 * Student IDs: n01719446, n01675664, n01700360
 * Date: 2025-11-26
 ******************************************************************************/
+
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+
+const UserSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    passwordHash: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+  },
+  { timestamps: true }
+);
+
+// Helper method to set password (hashing)
+UserSchema.methods.setPassword = async function (password) {
+  const saltRounds = 10;
+  this.passwordHash = await bcrypt.hash(password, saltRounds);
+};
+
+// Helper method to validate password on login
+UserSchema.methods.validatePassword = async function (password) {
+  return bcrypt.compare(password, this.passwordHash);
+};
+
+module.exports = mongoose.model("User", UserSchema);

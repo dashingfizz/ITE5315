@@ -14,8 +14,13 @@ const hbs = require('hbs');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const config = require("./config/database");
-
 const app = express();
+
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+
+require("dotenv").config();
+
 
 mongoose.connect(config.url)
 .then(() => console.log('Connected to MongoDB Atlas'))
@@ -54,9 +59,52 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Session middleware
+app.use(
+  session({
+    secret: process.env.SESSIONSECRET || "supersecretkey",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
+    }),
+    cookie: { maxAge: 1000 * 60 * 60 }, 
+  })
+);
+
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
+
+// app.use((req, res, next) => {
+//   console.log("REQ:", req.method, req.url);
+//   next();
+// });
+
+// Authentication middleware
+const { ensureAuth } = require("./middleware/auth");
+
+const authRoutes = require("./routes/auth"); 
+
 // Routes
+app.use("/auth", authRoutes);
+
+
+// Main routes
 app.use('/', require('./routes/index'));
-app.use('/api', require('./routes/api'));
+
+
+// Protected dashboard route
+app.get("/dashboard", ensureAuth, (req, res) => {
+  res.render("dashboard", {
+    title: "Dashboard",
+    user: req.session.user,
+  });
+});
+
+
 
 // 404 handler
 app.use((req, res) => {
@@ -78,6 +126,9 @@ app.use((err, req, res, next) => {
         searchCount: 0
     });
 });
+
+
+
 
 app.listen(config.port, () => {
     console.log(`Server running on http://localhost:${config.port}`);

@@ -223,3 +223,49 @@
     transform: translateY(-50%);
     pointer-events: none;
 }
+
+/* --------------------------------------- */
+/* 🎉 LOGIN & REGISTER PAGE STYLING        */
+/* --------------------------------------- */
+
+.login-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.login-card {
+    border: none;
+    border-radius: 12px;
+    padding: 2rem;
+    background: var(--white);
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
+}
+
+.login-card h2 {
+    color: var(--primary-orange);
+    font-weight: 700;
+}
+
+.login-card label {
+    font-weight: 600;
+}
+
+.login-card input {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.login-card input:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 5px rgba(255, 107, 53, 0.4);
+}
+
+.login-footer a {
+    color: var(--primary-orange);
+    font-weight: 600;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
