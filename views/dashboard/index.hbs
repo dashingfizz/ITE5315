@@ -13,31 +13,14 @@
                     
                     <!-- Profile Summary -->
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="card border-0 bg-light">
                                 <div class="card-body">
                                     <h6 class="card-title text-muted">ACCOUNT INFO</h6>
                                     <p class="mb-1"><strong>Email:</strong> {{user.email}}</p>
                                     {{#if user.firstName}}
-                                        <p class="mb-1"><strong>Name:</strong> {{user.firstName}} {{user.lastName}}</p>
+                                        <p class="mb-0"><strong>Name:</strong> {{user.firstName}} {{user.lastName}}</p>
                                     {{/if}}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card border-0 bg-light">
-                                <div class="card-body">
-                                    <h6 class="card-title text-muted">ACCOUNT STATUS</h6>
-                                    <p class="mb-1"><strong>Member Since:</strong> 
-                                        {{#if user.createdAt}}
-                                            {{formatDate user.createdAt}}
-                                        {{else}}
-                                            Recently
-                                        {{/if}}
-                                    </p>
-                                    <p class="mb-0"><strong>Account:</strong> 
-                                        <span class="badge bg-success">Active</span>
-                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -75,6 +58,7 @@
                     
                     <hr class="my-4">
                     
+                   
                     
                     <!-- DELETE ACCOUNT BUTTON -->
                     <hr class="my-4">
