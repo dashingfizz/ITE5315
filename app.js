@@ -17,7 +17,7 @@ const config = require("./config/database");
 const app = express();
 
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+// const MongoStore = require("connect-mongo");
 
 require("dotenv").config();
 
@@ -65,10 +65,7 @@ app.use(
     secret: process.env.SESSIONSECRET || "supersecretkey",
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions",
-    }),
+    // Removed the 'store' property - will use default MemoryStore
     cookie: { maxAge: 1000 * 60 * 60 }, 
   })
 );
