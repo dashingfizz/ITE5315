@@ -1,0 +1,170 @@
+{{> header}}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3">Welcome, {{user.email}} 👋</h2>
+                    
+                    {{#if user.firstName}}
+                        <p class="text-muted mb-4">Hello, {{user.firstName}} {{user.lastName}}!</p>
+                    {{/if}}
+                    
+                    <!-- Profile Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">ACCOUNT INFO</h6>
+                                    <p class="mb-1"><strong>Email:</strong> {{user.email}}</p>
+                                    {{#if user.firstName}}
+                                        <p class="mb-1"><strong>Name:</strong> {{user.firstName}} {{user.lastName}}</p>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">ACCOUNT STATUS</h6>
+                                    <p class="mb-1"><strong>Member Since:</strong> 
+                                        {{#if user.createdAt}}
+                                            {{formatDate user.createdAt}}
+                                        {{else}}
+                                            Recently
+                                        {{/if}}
+                                    </p>
+                                    <p class="mb-0"><strong>Account:</strong> 
+                                        <span class="badge bg-success">Active</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3">Account Management</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <span class="display-4">👤</span>
+                                    </div>
+                                    <h5 class="card-title">Edit Profile</h5>
+                                    <p class="card-text text-muted small">Update your name and email</p>
+                                    <a href="/dashboard/profile" class="btn btn-custom w-100">Edit Profile</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <span class="display-4">🔒</span>
+                                    </div>
+                                    <h5 class="card-title">Change Password</h5>
+                                    <p class="card-text text-muted small">Update your account password</p>
+                                    <a href="/dashboard/change-password" class="btn btn-outline-custom w-100">Change Password</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    
+                    <!-- DELETE ACCOUNT BUTTON -->
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            🗑 Delete My Account
+                        </button>
+                        <p class="text-muted small mt-2">
+                            This action cannot be undone. All your data will be permanently deleted.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger"><strong>⚠️ Warning: This action cannot be undone!</strong></p>
+                <p>Are you sure you want to delete your account? This will:</p>
+                <ul>
+                    <li>Permanently delete your account</li>
+                    <li>Remove all your personal information</li>
+                    <li>Delete any saved preferences or history</li>
+                </ul>
+                <p>To confirm, please type your email address below:</p>
+                <input type="email" id="confirmEmail" class="form-control" placeholder="Enter your email">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger" disabled>Delete My Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{> footer}}
+
+<script>
+    // Delete account confirmation logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmEmailInput = document.getElementById('confirmEmail');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const userEmail = "{{user.email}}";
+        
+        confirmEmailInput.addEventListener('input', function() {
+            if (this.value === userEmail) {
+                confirmDeleteBtn.disabled = false;
+                confirmDeleteBtn.textContent = 'Delete My Account';
+            } else {
+                confirmDeleteBtn.disabled = true;
+                confirmDeleteBtn.textContent = 'Enter correct email';
+            }
+        });
+        
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (!confirm('Are you absolutely sure? This cannot be undone!')) return;
+            
+            // Show loading state
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Deleting...';
+            
+            // Send DELETE request
+            fetch('/dashboard/delete-account', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    alert('Error deleting account. Please try again.');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting account. Please try again.');
+                location.reload();
+            });
+        });
+    });
+</script>
