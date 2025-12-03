@@ -8,17 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nanaaks/ITE5315-Project.git"
+    "url": "git+https://github.com/dashingfizz/ITE5315.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nanaaks/ITE5315-Project/issues"
+    "url": "https://github.com/dashingfizz/ITE5315/issues"
   },
-  "homepage": "https://github.com/nanaaks/ITE5315-Project#readme",
+  "homepage": "https://github.com/dashingfizz/ITE5315#readme",
   "dependencies": {
-    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "express": "^5.2.0",
     "express-handlebars": "^8.0.3",

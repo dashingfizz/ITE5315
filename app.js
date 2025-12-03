@@ -17,7 +17,6 @@ const config = require("./config/database");
 const app = express();
 
 const session = require("express-session");
-// const MongoStore = require("connect-mongo");
 
 require("dotenv").config();
 
@@ -238,7 +237,6 @@ app.delete("/dashboard/delete-account", ensureAuth, async (req, res) => {
 });
 
 
-
 // 404 handler
 app.use((req, res) => {
     res.status(404).render('results', {
@@ -249,7 +247,8 @@ app.use((req, res) => {
     });
 });
 
-// Error handling middleware
+
+// Error-handler middleware
 app.use((err, req, res, next) => {
     console.error('Server Error:', err);
     res.status(500).render('results', {
@@ -259,8 +258,6 @@ app.use((err, req, res, next) => {
         searchCount: 0
     });
 });
-
-
 
 
 app.listen(config.port, () => {
