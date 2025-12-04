@@ -20,7 +20,6 @@ const session = require("express-session");
 
 require("dotenv").config();
 
-
 mongoose.connect(config.url)
 .then(() => console.log('Connected to MongoDB Atlas'))
 .catch(err => console.error('MongoDB connection error:', err));
@@ -279,7 +278,6 @@ app.use((err, req, res, next) => {
         searchCount: 0
     });
 });
-
 
 app.listen(config.port, () => {
     console.log(`Server running on http://localhost:${config.port}`);
