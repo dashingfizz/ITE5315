@@ -14,6 +14,9 @@ const stadiumController = {
     // Get home page data
     getHome: async (req, res) => {
         try {
+            if (req.session && req.session.user) {
+                return res.redirect("/dashboard");
+            }
             console.log('Fetching data from MongoDB...');
             
             const leagues = await Stadium.distinct('league').maxTimeMS(30000);

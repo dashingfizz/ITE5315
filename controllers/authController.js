@@ -53,7 +53,7 @@ exports.postRegister = async (req, res) => {
             role: user.role
         };
 
-        res.redirect("/");
+        res.redirect("/dashboard");
     } catch (error) {
         console.error("Registration error:", error);
         res.render("auth/register", {
@@ -96,7 +96,7 @@ exports.postLogin = async (req, res) => {
         role: user.role
     };
 
-    res.redirect("/");
+    res.redirect("/dashboard");
 };
 
 // Logout

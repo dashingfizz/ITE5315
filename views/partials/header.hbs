@@ -8,35 +8,71 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
- <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
+
+<nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
     <div class="container">
-        <a class="navbar-brand" href="/">
-            🍔 GameDay Eats
-        </a>
-        <div class="navbar-nav">
-            <a class="nav-link" href="/">Home</a>
 
-            {{#if user}}
-                <span class="nav-link disabled">Welcome, {{user.email}}</span>
-                <a class="nav-link" href="/dashboard">Dashboard</a>
-                <a class="nav-link" href="/auth/logout">Logout</a>
-            {{else}}
-                <a class="nav-link" href="/auth/login">Login</a>
-                <a class="nav-link" href="/auth/register">Register</a>
-            {{/if}}
+        <!-- Brand -->
+        <a class="navbar-brand" href="/">🍔 GameDay Eats</a>
 
-            <a class="nav-link" href="/health">Health Check</a>
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Items -->
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+
+                {{#if user}}
+                    <li class="nav-item">
+                        <span class="nav-link disabled">Welcome, {{user.email}}</span>
+                    </li>
+
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/user">Profile</a>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">Logout</a>
+                    </li>
+
+                {{else}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/login">Login</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/register">Register</a>
+                    </li>
+                {{/if}}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/health">Health Check</a>
+                </li>
+
+            </ul>
         </div>
+
     </div>
 </nav>
 
-
-    <!-- Hero Section -->
-    <header class="hero-section">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">GameDay Eats</h1>
-                <p class="hero-subtitle">Find the best restaurants near your favorite stadiums</p>
-            </div>
+<!-- Hero Section -->
+<header class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">GameDay Eats</h1>
+            <p class="hero-subtitle">Find the best restaurants near your favorite stadiums</p>
         </div>
-    </header>
+    </div>
+</header>

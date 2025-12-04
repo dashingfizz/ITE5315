@@ -188,6 +188,30 @@
     font-size: 1.2rem;
 }
 
+.carousel-img {
+  height: 450px;
+  object-fit: cover;
+  filter: brightness(75%);
+  border-radius: 10px;
+}
+
+.carousel-caption h5 {
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+}
+
+.carousel-caption p {
+  font-size: 1.1rem;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: invert(100%);
+}
+
+
 /* Loading Animation */
 .loading-spinner {
     color: var(--primary-orange);
@@ -225,7 +249,7 @@
 }
 
 /* --------------------------------------- */
-/* 🎉 LOGIN & REGISTER PAGE STYLING        */
+/*  LOGIN & REGISTER PAGE STYLING        */
 /* --------------------------------------- */
 
 .login-wrapper {

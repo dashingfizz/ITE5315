@@ -92,21 +92,42 @@ app.use("/auth", authRoutes);
 app.use('/', require('./routes/index'));
 
 
-// Protected dashboard route
+// Protected user route
 app.get("/dashboard", ensureAuth, (req, res) => {
-  res.render("dashboard/index", {
-    title: "Dashboard",
-    user: req.session.user,
+      const leagues = ["NBA", "NFL", "NHL", "MLB"];
+
+  res.render("dashboard", {
+    title: "GameDay Eats - Dashboard",
+    user: req.session.user,leagues, teams: []
   });
 });
+
+// user profile and account management routes
+app.get("/user", ensureAuth, async (req, res) => {
+  try {
+    const User = require("./models/User");
+   const user = await User.findById(req.session.user._id);
+
+    res.render("user/index", {
+      title: "My Account",
+      user: user,
+      success: req.query.success,
+      error: req.query.error
+    });
+  } catch (error) {
+    console.error("User load error:", error);
+    res.redirect("/login");
+  } 
+});
+
 // Profile edit page
-app.get("/dashboard/profile", ensureAuth, async (req, res) => {
+app.get("/user/profile", ensureAuth, async (req, res) => {
   try {
     // Get fresh user data from database
     const User = require("./models/User");
     const user = await User.findById(req.session.user._id);
     
-    res.render("dashboard/profile", {
+    res.render("user/profile", {
       title: "Edit Profile",
       user: user,
       success: req.query.success,
@@ -114,19 +135,19 @@ app.get("/dashboard/profile", ensureAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("Profile load error:", error);
-    res.redirect("/dashboard?error=Error loading profile");
+    res.redirect("/user?error=Error loading profile");
   }
 });
 
 // Update profile
-app.post("/dashboard/profile/update", ensureAuth, async (req, res) => {
+app.post("/user/profile/update", ensureAuth, async (req, res) => {
   try {
     const User = require("./models/User");
     const { email, firstName, lastName } = req.body;
     
     // Validate email
     if (!email || !email.includes('@')) {
-      return res.redirect("/dashboard/profile?error=Valid email is required");
+      return res.redirect("/user/profile?error=Valid email is required");
     }
     
     // Check if email is already taken by another user
@@ -136,7 +157,7 @@ app.post("/dashboard/profile/update", ensureAuth, async (req, res) => {
     });
     
     if (existingUser) {
-      return res.redirect("/dashboard/profile?error=Email already in use");
+      return res.redirect("/user/profile?error=Email already in use");
     }
     
     // Update user
@@ -158,16 +179,16 @@ app.post("/dashboard/profile/update", ensureAuth, async (req, res) => {
       lastName: updatedUser.lastName
     };
     
-    res.redirect("/dashboard/profile?success=Profile updated successfully");
+    res.redirect("/user/profile?success=Profile updated successfully");
   } catch (error) {
     console.error("Profile update error:", error);
-    res.redirect("/dashboard/profile?error=Error updating profile");
+    res.redirect("/user/profile?error=Error updating profile");
   }
 });
 
 // Change password page
-app.get("/dashboard/change-password", ensureAuth, (req, res) => {
-  res.render("dashboard/change-password", {
+app.get("/user/change-password", ensureAuth, (req, res) => {
+  res.render("user/change-password", {
     title: "Change Password",
     user: req.session.user,
     success: req.query.success,
@@ -176,18 +197,18 @@ app.get("/dashboard/change-password", ensureAuth, (req, res) => {
 });
 
 // Update password
-app.post("/dashboard/change-password", ensureAuth, async (req, res) => {
+app.post("/user/change-password", ensureAuth, async (req, res) => {
   try {
     const User = require("./models/User");
     const { currentPassword, newPassword, confirmPassword } = req.body;
     
     // Validate
     if (newPassword !== confirmPassword) {
-      return res.redirect("/dashboard/change-password?error=New passwords do not match");
+      return res.redirect("/user/change-password?error=New passwords do not match");
     }
     
     if (newPassword.length < 6) {
-      return res.redirect("/dashboard/change-password?error=Password must be at least 6 characters");
+      return res.redirect("/user/change-password?error=Password must be at least 6 characters");
     }
     
     // Get user
@@ -196,23 +217,23 @@ app.post("/dashboard/change-password", ensureAuth, async (req, res) => {
     // Verify current password
     const isMatch = await user.validatePassword(currentPassword);
     if (!isMatch) {
-      return res.redirect("/dashboard/change-password?error=Current password is incorrect");
+      return res.redirect("/user/change-password?error=Current password is incorrect");
     }
     
     // Update password
     await user.setPassword(newPassword);
     await user.save();
     
-    res.redirect("/dashboard/change-password?success=Password updated successfully");
+    res.redirect("/user/change-password?success=Password updated successfully");
   } catch (error) {
     console.error("Password change error:", error);
-    res.redirect("/dashboard/change-password?error=Error changing password");
+    res.redirect("/user/change-password?error=Error changing password");
   }
 });
-// Add this route in app.js after your other dashboard routes
+// Add this route in app.js after your other user routes
 
 // Delete account
-app.delete("/dashboard/delete-account", ensureAuth, async (req, res) => {
+app.delete("/user/delete-account", ensureAuth, async (req, res) => {
   try {
     const User = require("./models/User");
     
