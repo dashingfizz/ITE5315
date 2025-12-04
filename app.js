@@ -19,10 +19,22 @@ const session = require("express-session");
 
 const app = express();
 
+// Middleware for body parsing and fetching static files
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
+// MongoDB connection
 mongoose.connect(config.url)
-.then(() => console.log('Connected to MongoDB Atlas'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => console.log("Connected to MongoDB Atlas"))
+.catch((err) => console.error("Connection error:", err));
+
+const db = mongoose.connection;
+
+// Event Logs
+db.on("connected", () => console.log("Mongoose connected"));
+db.on("error", (err) => console.error("Mongoose error:", err));
+db.on("disconnected", () => console.log("Mongoose disconnected"));
 
 // Set up Handlebars as view engine
 app.set('view engine', 'hbs');
@@ -51,11 +63,6 @@ hbs.registerHelper('gt', function(a, b) {
 hbs.registerHelper('exists', function(value) {
     return value !== null && value !== undefined && value !== '';
 });
-
-// Middleware
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 
 // Session middleware
 app.use(
