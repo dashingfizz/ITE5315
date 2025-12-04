@@ -25,4 +25,3 @@ router.post("/login", ensureGuest, authController.postLogin);
 router.get("/logout", ensureAuth, authController.logout);
 
 module.exports = router;
-

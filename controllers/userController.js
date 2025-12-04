@@ -8,10 +8,11 @@
 * Date: 2025-11-26
 ******************************************************************************/
 
-
 const User = require("../models/User");
 
 // User registration
 const user = new User({ email: req.body.email });
 await user.setPassword(req.body.password);
 await user.save();
+
+// 
