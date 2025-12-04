@@ -94,7 +94,7 @@ app.use('/', require('./routes/index'));
 
 // Protected user route
 app.get("/dashboard", ensureAuth, (req, res) => {
-      const leagues = ["NBA", "NFL", "NHL", "MLB"];
+      const leagues = ["NBA", "NFL", "NHL", "MLB", "MLS"];
 
   res.render("dashboard", {
     title: "GameDay Eats - Dashboard",
