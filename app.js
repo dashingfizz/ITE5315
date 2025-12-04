@@ -36,6 +36,13 @@ db.on("connected", () => console.log("Mongoose connected"));
 db.on("error", (err) => console.error("Mongoose error:", err));
 db.on("disconnected", () => console.log("Mongoose disconnected"));
 
+// Graceful shutdown
+process.on("SIGINT", async () => {
+  await db.close();
+  console.log("Mongoose disconnected on app termination");
+  process.exit(0);
+});
+
 // Set up Handlebars as view engine
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
