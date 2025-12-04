@@ -8,17 +8,17 @@
 * Date: 2025-11-26
 ******************************************************************************/
 
+require("dotenv").config();
 const express = require('express');
+const mongoose = require('mongoose');
+const config = require("./config/database");
+const fs = require('fs');
 const path = require('path');
 const hbs = require('hbs');
-const mongoose = require('mongoose');
-const fs = require('fs');
-const config = require("./config/database");
-const app = express();
-
 const session = require("express-session");
 
-require("dotenv").config();
+const app = express();
+
 
 mongoose.connect(config.url)
 .then(() => console.log('Connected to MongoDB Atlas'))
