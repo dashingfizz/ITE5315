@@ -8,7 +8,6 @@
 * Date: 2025-11-26
 ******************************************************************************/
 
-
 const User = require("../models/User");
 const { validationResult } = require("express-validator");
 

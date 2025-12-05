@@ -8,22 +8,12 @@
 * Date: 2025-11-26
 ******************************************************************************/
 
-// middleware/auth.js
+const express = require("express");
+const router = express.Router();
+const { ensureAuth } = require("../middleware/auth");
+const dashboardController = require("../controllers/dashboardController");
 
-// Only allow if logged in
-function ensureAuth(req, res, next) {
-  if (req.session && req.session.user) {
-    return next();
-  }
-  return res.redirect("/auth/login");
-}
+// Protected route for dashboard
+router.get("/", ensureAuth, dashboardController.getDashboard);
 
-// Optional: only allow guests (not logged in)
-function ensureGuest(req, res, next) {
-  if (req.session && req.session.user) {
-    return res.redirect("/dashboard"); // already logged in
-  }
-  return next();
-}
-
-module.exports = { ensureAuth, ensureGuest };
+module.exports = router;

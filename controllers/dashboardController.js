@@ -8,22 +8,12 @@
 * Date: 2025-11-26
 ******************************************************************************/
 
-// middleware/auth.js
+exports.getDashboard = (req, res) => {
 
-// Only allow if logged in
-function ensureAuth(req, res, next) {
-  if (req.session && req.session.user) {
-    return next();
-  }
-  return res.redirect("/auth/login");
-}
+  const leagues = ["NBA", "NFL", "NHL", "MLB", "MLS"];
 
-// Optional: only allow guests (not logged in)
-function ensureGuest(req, res, next) {
-  if (req.session && req.session.user) {
-    return res.redirect("/dashboard"); // already logged in
-  }
-  return next();
-}
-
-module.exports = { ensureAuth, ensureGuest };
+  res.render("dashboard", {
+    title: "GameDay Eats - Dashboard",
+    user: req.session.user,leagues, teams: []
+  });
+};
