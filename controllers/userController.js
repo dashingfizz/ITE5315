@@ -10,11 +10,6 @@
 
 const User = require("../models/User");
 
-// User registration
-//const user = new User({ email: req.body.email });
-//await user.setPassword(req.body.password);
-//await user.save();
-
 // User profile
 exports.getUserAccount = async (req, res) => {
   try {
