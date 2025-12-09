@@ -107,6 +107,10 @@ app.use("/dashboard", dashboardRoutes);
 const userRoutes = require("./routes/user");
 app.use("/user", userRoutes);
 
+// Mount api endpoints
+const apiRoutes = require("./routes/api");
+app.use("/api", apiRoutes);
+
 // 404 handler
 app.use((req, res) => {
     res.status(404).render('results', {

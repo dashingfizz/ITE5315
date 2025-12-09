@@ -11,6 +11,13 @@
 const express = require('express');
 const router = express.Router();
 const Stadium = require('../models/Stadium');
+const restaurantController = require("../controllers/restaurantController");
+
+// Get all stadiums
+router.get("/stadiums", restaurantController.getStadiums);
+
+// Get all businesses for a specific stadium
+router.get("/stadiums/:id/restaurants", restaurantController.getRestaurantsbyStadium);
 
 // Get restaurants API
 router.get('/restaurants', async (req, res) => {
