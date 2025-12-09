@@ -64,14 +64,18 @@ exports.getRestaurantsbyStadium = async (req, res) => {
     );
   }
 
+  const total = results.length;
+  const totalPages = Math.ceil(total / limit);
+
   // Pagination
   const startIndex = (page - 1) * limit;
   const paginated = results.slice(startIndex, startIndex + Number(limit));
 
-  res.json({
-    total: results.length,
-    page: Number(page),
-    limit: Number(limit),
-    businesses: paginated
+    res.json({
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages,
+      businesses: paginated
   });
 };
