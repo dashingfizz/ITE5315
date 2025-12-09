@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const hbs = require('hbs');
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 
 const app = express();
 
@@ -77,7 +78,11 @@ app.use(
     secret: process.env.SESSIONSECRET || "supersecretkey",
     resave: false,
     saveUninitialized: false,
-    // Removed the 'store' property - will use default MemoryStore
+    store: MongoStore.default.create({
+        mongoUrl: config.url,
+        collectionName: "sessions",
+        ttl: 60 * 60,
+    }),
     cookie: { maxAge: 1000 * 60 * 60 }, 
   })
 );
