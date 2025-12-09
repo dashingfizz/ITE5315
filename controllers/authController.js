@@ -92,7 +92,8 @@ exports.postLogin = async (req, res) => {
     req.session.user = {
         _id: user._id,
         email: user.email,
-        role: user.role
+        firstName: user.firstName,
+        lastName: user.lastName,
     };
 
     res.redirect("/dashboard");

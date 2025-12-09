@@ -11,9 +11,11 @@
 exports.getDashboard = (req, res) => {
 
   const leagues = ["NBA", "NFL", "NHL", "MLB", "MLS"];
+  console.log("SESSION USER:", req.session.user);
 
   res.render("dashboard", {
     title: "GameDay Eats - Dashboard",
-    user: req.session.user,leagues, teams: []
+    leagues,
+    teams: []
   });
 };
