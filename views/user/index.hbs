@@ -2,7 +2,7 @@
 
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-8">
+        <div class="col-md-10 col-lg-10">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
                     <h2 class="h4 mb-3">Welcome, {{user.email}} 👋</h2>
@@ -21,6 +21,9 @@
                                     {{#if user.firstName}}
                                         <p class="mb-0"><strong>Name:</strong> {{user.firstName}} {{user.lastName}}</p>
                                     {{/if}}
+                                    {{#if user.role}}
+                                        <p class="mb-0"><strong>Role:</strong> <span class="badge bg-primary">{{user.role}}</span></p>
+                                    {{/if}}
                                 </div>
                             </div>
                         </div>
@@ -28,8 +31,71 @@
                     
                     <hr>
                     
+                    <!-- BUSINESS MANAGEMENT SECTION -->
+                    <h5 class="mb-3">Business Management</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <span class="display-4">🏢</span>
+                                    </div>
+                                    <h5 class="card-title">My Businesses</h5>
+                                    <p class="card-text text-muted small">View and manage your listed businesses</p>
+                                    {{#if userBusinesses.length}}
+                                        <p class="text-success fw-bold mb-3">{{userBusinesses.length}} business(es) listed</p>
+                                    {{else}}
+                                        <p class="text-muted mb-3">No businesses listed yet</p>
+                                    {{/if}}
+                                    <a href="/business/my-businesses" class="btn btn-custom w-100">Manage Businesses</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <span class="display-4">➕</span>
+                                    </div>
+                                    <h5 class="card-title">Add New Business</h5>
+                                    <p class="card-text text-muted small">List a new restaurant or venue</p>
+                                    <a href="/business/create" class="btn btn-outline-custom w-100">Create Business</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Business Actions (if user has businesses) -->
+                    {{#if userBusinesses.length}}
+                    <div class="card border-0 bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted mb-3">QUICK ACTIONS</h6>
+                            <div class="row">
+                                {{#each userBusinesses}}
+                                <div class="col-md-6 mb-2">
+                                    <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded">
+                                        <div>
+                                            <h6 class="mb-0">{{this.name}}</h6>
+                                            <small class="text-muted">{{this.type}} • {{this.city}}</small>
+                                        </div>
+                                        <div>
+                                            <a href="/business/edit/{{this._id}}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                            <a href="/business/view/{{this._id}}" class="btn btn-sm btn-custom">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+                    
+                    <hr>
+                    
+                    <!-- ACCOUNT MANAGEMENT SECTION -->
                     <h5 class="mb-3">Account Management</h5>
-                    <div class="row g-3">
+                    <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <div class="card h-100 border-0 shadow-sm">
                                 <div class="card-body text-center">
@@ -42,6 +108,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="col-md-6">
                             <div class="card h-100 border-0 shadow-sm">
                                 <div class="card-body text-center">
@@ -56,13 +123,8 @@
                         </div>
                     </div>
                     
-                    <hr class="my-4">
-                    
-                   
-                    
                     <!-- DELETE ACCOUNT BUTTON -->
-                    <hr class="my-4">
-                    <div class="text-center">
+                    <div class="text-center mt-5">
                         <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
                             🗑 Delete My Account
                         </button>

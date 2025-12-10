@@ -1,0 +1,336 @@
+{{! views/business/create.hbs }}
+{{> header}}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header card-header-custom">
+                    <h2 class="h4 mb-0">Add Restaurant Near Stadium</h2>
+                    <p class="mb-0 text-white-50">List your business to appear in stadium search results</p>
+                </div>
+                <div class="card-body p-4">
+                    {{#if error}}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{error}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {{/if}}
+                    
+                    {{#if success}}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{success}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {{/if}}
+                    
+                    <form id="createBusinessForm" action="/api/business/create" method="POST">
+                        <div class="row g-3">
+                            <!-- Stadium Selection -->
+                            <div class="col-12">
+                                <h5 class="mb-3">Stadium Association</h5>
+                                <p class="text-muted small mb-3">Select which stadium this business is near</p>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="league" class="form-label fw-bold">League *</label>
+                                <select class="form-select" id="league" name="league" required>
+                                    <option value="">Select league...</option>
+                                    {{#each leagues}}
+                                    <option value="{{this}}">{{this}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="team" class="form-label fw-bold">Team *</label>
+                                <select class="form-select" id="team" name="team" required>
+                                    <option value="">Select team...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="stadium" class="form-label fw-bold">Stadium *</label>
+                                <input type="text" class="form-control" id="stadium" name="stadium" readonly required>
+                                <div class="form-text">Stadium will auto-populate</div>
+                            </div>
+                            
+                            <!-- Business Basic Info -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3">Business Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-bold">Business Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                                <div class="form-text">Official name of your business</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="alias" class="form-label fw-bold">Business Alias *</label>
+                                <input type="text" class="form-control" id="alias" name="alias" required>
+                                <div class="form-text">URL-friendly name (e.g., "heirloom-market-bbq-atlanta")</div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="rating" class="form-label fw-bold">Rating *</label>
+                                <select class="form-select" id="rating" name="rating" required>
+                                    <option value="">Select rating...</option>
+                                    <option value="1">1 Star</option>
+                                    <option value="1.5">1.5 Stars</option>
+                                    <option value="2">2 Stars</option>
+                                    <option value="2.5">2.5 Stars</option>
+                                    <option value="3">3 Stars</option>
+                                    <option value="3.5">3.5 Stars</option>
+                                    <option value="4">4 Stars</option>
+                                    <option value="4.5">4.5 Stars</option>
+                                    <option value="5">5 Stars</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="review_count" class="form-label fw-bold">Review Count</label>
+                                <input type="number" class="form-control" id="review_count" name="review_count" min="0" value="0">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="price" class="form-label fw-bold">Price Level</label>
+                                <select class="form-select" id="price" name="price">
+                                    <option value="">Select price...</option>
+                                    <option value="$">$ - Inexpensive</option>
+                                    <option value="$$">$$ - Moderate</option>
+                                    <option value="$$$">$$$ - Expensive</option>
+                                    <option value="$$$$">$$$$ - Very Expensive</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Contact Information -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3">Contact Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label fw-bold">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="url" class="form-label fw-bold">Website URL</label>
+                                <input type="url" class="form-control" id="url" name="url" placeholder="https://">
+                            </div>
+                            
+                            <!-- Location Information -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3">Location Information</h5>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <label for="address1" class="form-label fw-bold">Street Address</label>
+                                <input type="text" class="form-control" id="address1" name="address1">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="distance" class="form-label fw-bold">Distance (miles)</label>
+                                <input type="number" class="form-control" id="distance" name="distance" step="0.1" min="0" value="0.5">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="city" class="form-label fw-bold">City</label>
+                                <input type="text" class="form-control" id="city" name="city">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="state" class="form-label fw-bold">State</label>
+                                <input type="text" class="form-control" id="state" name="state">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="zip_code" class="form-label fw-bold">ZIP Code</label>
+                                <input type="text" class="form-control" id="zip_code" name="zip_code">
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="col-12 mt-5">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <button type="submit" class="btn btn-custom btn-lg px-5">
+                                        🏢 Add Business
+                                    </button>
+                                    <a href="/user" class="btn btn-outline-secondary btn-lg px-5">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{> footer}}
+
+<script>
+    // Dynamic team loading based on league selection
+    document.getElementById('league').addEventListener('change', async function() {
+        const league = this.value;
+        const teamSelect = document.getElementById('team');
+        const stadiumInput = document.getElementById('stadium');
+        
+        // Reset selects
+        teamSelect.innerHTML = '<option value="">Select team...</option>';
+        stadiumInput.value = '';
+        
+        if (league) {
+            teamSelect.disabled = true;
+            teamSelect.innerHTML = '<option value="">Loading teams...</option>';
+            
+            try {
+                const response = await fetch(`/api/teams/${encodeURIComponent(league)}`);
+                const data = await response.json();
+                
+                teamSelect.innerHTML = '<option value="">Select team...</option>';
+                if (data.teams && data.teams.length > 0) {
+                    data.teams.forEach(team => {
+                        const option = document.createElement('option');
+                        option.value = team;
+                        option.textContent = team;
+                        teamSelect.appendChild(option);
+                    });
+                }
+                teamSelect.disabled = false;
+            } catch (error) {
+                console.error('Error loading teams:', error);
+                teamSelect.innerHTML = '<option value="">Error loading teams</option>';
+                teamSelect.disabled = false;
+            }
+        }
+    });
+    
+    // Dynamic stadium loading based on team selection
+    document.getElementById('team').addEventListener('change', async function() {
+        const team = this.value;
+        const stadiumInput = document.getElementById('stadium');
+        const cityInput = document.getElementById('city');
+        const stateInput = document.getElementById('state');
+        
+        stadiumInput.value = 'Loading...';
+        cityInput.value = '';
+        stateInput.value = '';
+        
+        if (team) {
+            try {
+                const response = await fetch(`/api/stadium/${encodeURIComponent(team)}`);
+                const data = await response.json();
+                
+                stadiumInput.value = data.stadium || '';
+                
+                // Also fetch stadium details to populate city and state
+                if (data.stadium && data.stadium !== 'Stadium information not available') {
+                    const stadiumResponse = await fetch(`/api/stadium-details/${encodeURIComponent(team)}`);
+                    const stadiumData = await stadiumResponse.json();
+                    
+                    if (stadiumData) {
+                        if (!cityInput.value && stadiumData.city) {
+                            cityInput.value = stadiumData.city;
+                        }
+                        if (!stateInput.value && stadiumData.state) {
+                            stateInput.value = stadiumData.state;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading stadium:', error);
+                stadiumInput.value = 'Stadium information not available';
+            }
+        } else {
+            stadiumInput.value = '';
+        }
+    });
+    
+    // Form submission with AJAX
+    document.getElementById('createBusinessForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        
+        // Form validation
+        const requiredFields = ['league', 'team', 'stadium', 'name', 'alias', 'rating'];
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            const input = document.querySelector(`[name="${field}"]`);
+            if (!input.value.trim()) {
+                isValid = false;
+                input.classList.add('is-invalid');
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            alert('Please fill in all required fields marked with *');
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+        
+        try {
+            const formData = new FormData(form);
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message and redirect
+                const successAlert = document.createElement('div');
+                successAlert.className = 'alert alert-success alert-dismissible fade show';
+                successAlert.innerHTML = `
+                    <strong>Success!</strong> ${result.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.parentNode.insertBefore(successAlert, form);
+                
+                // Redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/user';
+                }, 2000);
+            } else {
+                // Show error message
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+                errorAlert.innerHTML = `
+                    <strong>Error!</strong> ${result.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.parentNode.insertBefore(errorAlert, form);
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            
+            const errorAlert = document.createElement('div');
+            errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+            errorAlert.innerHTML = `
+                <strong>Error!</strong> Network error. Please try again.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            form.parentNode.insertBefore(errorAlert, form);
+            
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    });
+</script>

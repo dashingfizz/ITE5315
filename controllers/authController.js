@@ -96,7 +96,7 @@ exports.postLogin = async (req, res) => {
         lastName: user.lastName,
     };
 
-    res.redirect("/dashboard");
+    res.redirect("/user");
 };
 
 // Logout

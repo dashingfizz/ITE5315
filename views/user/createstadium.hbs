@@ -1,0 +1,268 @@
+{{! views/stadium/create.hbs }}
+{{> header}}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header card-header-custom">
+                    <h2 class="h4 mb-0">Create New Stadium</h2>
+                    <p class="mb-0 text-white-50">Add a new stadium to the database</p>
+                </div>
+                <div class="card-body p-4">
+                    {{#if error}}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{error}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {{/if}}
+                    
+                    <form id="createStadiumForm" action="/api/stadium/create" method="POST">
+                        <div class="row g-3">
+                            <!-- League Information -->
+                            <div class="col-12">
+                                <h5 class="mb-3">League & Team Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="league" class="form-label fw-bold">League *</label>
+                                <select class="form-select" id="league" name="league" required>
+                                    <option value="">Select league...</option>
+                                    <option value="MLB">MLB</option>
+                                    <option value="NFL">NFL</option>
+                                    <option value="NBA">NBA</option>
+                                    <option value="NHL">NHL</option>
+                                    <option value="MLS">MLS</option>
+                                    <option value="NCAA">NCAA</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="team" class="form-label fw-bold">Team Name *</label>
+                                <input type="text" class="form-control" id="team" name="team" required>
+                                <div class="form-text">Full team name (e.g., "Anaheim Ducks")</div>
+                            </div>
+                            
+                            <!-- Stadium Information -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3">Stadium Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="stadium" class="form-label fw-bold">Stadium Name *</label>
+                                <input type="text" class="form-control" id="stadium" name="stadium" required>
+                                <div class="form-text">Official stadium name (e.g., "Honda Center")</div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="stadium_latitude" class="form-label fw-bold">Latitude *</label>
+                                <input type="number" class="form-control" id="stadium_latitude" name="stadium_latitude" step="0.000001" required>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="stadium_longitude" class="form-label fw-bold">Longitude *</label>
+                                <input type="number" class="form-control" id="stadium_longitude" name="stadium_longitude" step="0.000001" required>
+                            </div>
+                            
+                            <!-- Location Information -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3">Location Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="city" class="form-label fw-bold">City *</label>
+                                <input type="text" class="form-control" id="city" name="city" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="state" class="form-label fw-bold">State *</label>
+                                <input type="text" class="form-control" id="state" name="state" required>
+                            </div>
+                            
+                            <!-- Additional Information -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3">Additional Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="radius" class="form-label fw-bold">Search Radius</label>
+                                <input type="text" class="form-control" id="radius" name="radius" value="3000 meters">
+                                <div class="form-text">Default search radius for nearby businesses</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="total" class="form-label fw-bold">Initial Business Count</label>
+                                <input type="number" class="form-control" id="total" name="total" min="0" value="0">
+                                <div class="form-text">Number of businesses to start with (usually 0)</div>
+                            </div>
+                            
+                            <!-- Businesses Array (Optional) -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3">Initial Businesses (Optional)</h5>
+                                <p class="text-muted small">You can add businesses later, but you can add some now if you have the data.</p>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div id="businessesContainer">
+                                    <!-- Businesses will be added here dynamically -->
+                                </div>
+                                <button type="button" id="addBusinessBtn" class="btn btn-sm btn-outline-primary mt-2">
+                                    + Add Business
+                                </button>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="col-12 mt-5">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <button type="submit" class="btn btn-custom btn-lg px-5">
+                                        🏟️ Create Stadium
+                                    </button>
+                                    <a href="/user" class="btn btn-outline-secondary btn-lg px-5">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{> footer}}
+
+<script>
+    let businessCount = 0;
+    
+    // Add business field
+    document.getElementById('addBusinessBtn').addEventListener('click', function() {
+        businessCount++;
+        const container = document.getElementById('businessesContainer');
+        
+        const businessDiv = document.createElement('div');
+        businessDiv.className = 'card mb-3';
+        businessDiv.innerHTML = `
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Business #${businessCount}</h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-business">Remove</button>
+                </div>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label small">Business Name</label>
+                        <input type="text" class="form-control" name="businesses[${businessCount}][name]">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Alias</label>
+                        <input type="text" class="form-control" name="businesses[${businessCount}][alias]">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Rating</label>
+                        <input type="number" class="form-control" name="businesses[${businessCount}][rating]" min="0" max="5" step="0.5">
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(businessDiv);
+        
+        // Add remove functionality
+        businessDiv.querySelector('.remove-business').addEventListener('click', function() {
+            container.removeChild(businessDiv);
+        });
+    });
+    
+    // Form submission with AJAX
+    document.getElementById('createStadiumForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        
+        // Form validation
+        const requiredFields = ['league', 'team', 'stadium', 'stadium_latitude', 'stadium_longitude', 'city', 'state'];
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            const input = document.querySelector(`[name="${field}"]`);
+            if (!input.value.trim()) {
+                isValid = false;
+                input.classList.add('is-invalid');
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            alert('Please fill in all required fields');
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Creating...';
+        
+        try {
+            // Collect form data
+            const formData = new FormData(form);
+            const data = {};
+            
+            // Convert FormData to object
+            formData.forEach((value, key) => {
+                // Handle nested arrays for businesses
+                if (key.startsWith('businesses[')) {
+                    if (!data.businesses) data.businesses = [];
+                    
+                    // Parse array index from key
+                    const match = key.match(/businesses\[(\d+)\]\[(\w+)\]/);
+                    if (match) {
+                        const index = parseInt(match[1]);
+                        const field = match[2];
+                        
+                        // Ensure array element exists
+                        if (!data.businesses[index]) {
+                            data.businesses[index] = {};
+                        }
+                        
+                        data.businesses[index][field] = value;
+                    }
+                } else {
+                    data[key] = value;
+                }
+            });
+            
+            // Clean up empty businesses
+            if (data.businesses) {
+                data.businesses = data.businesses.filter(b => b && b.name);
+            }
+            
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message and redirect
+                alert(result.message);
+                window.location.href = '/user';
+            } else {
+                // Show error message
+                alert(`Error: ${result.message}`);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('Network error. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    });
+</script>

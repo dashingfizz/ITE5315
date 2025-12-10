@@ -11,13 +11,40 @@
 const express = require('express');
 const router = express.Router();
 const Stadium = require('../models/Stadium');
+const stadiumController = require('../controllers/stadiumController');
 const restaurantController = require("../controllers/restaurantController");
+const { ensureAuth } = require('../middleware/auth');
+
+// IMPORTANT: Since this is mounted as "/api" in app.js,
+// all routes here are automatically prefixed with "/api"
+
+// Stadium management API
+router.post('/stadium/create', ensureAuth, stadiumController.createStadium);
+// This becomes: POST /api/stadium/create
+
+// Business management API
+router.post('/business/create', ensureAuth, stadiumController.createBusiness);
+// This becomes: POST /api/business/create
+
+// FIXED: Split into two routes - one with userId, one without
+router.get('/business/user/:userId', ensureAuth, stadiumController.getUserBusinesses);
+// This becomes: GET /api/business/user/:userId
+router.get('/business/user', ensureAuth, stadiumController.getUserBusinesses);
+// This becomes: GET /api/business/user (uses session userId)
+
+router.put('/business/update/:businessId', ensureAuth, stadiumController.updateBusiness);
+// This becomes: PUT /api/business/update/:businessId
+
+router.delete('/business/delete/:businessId', ensureAuth, stadiumController.deleteBusiness);
+// This becomes: DELETE /api/business/delete/:businessId
 
 // Get all stadiums
 router.get("/stadiums", restaurantController.getStadiums);
+// This becomes: GET /api/stadiums
 
 // Get all businesses for a specific stadium
 router.get("/stadiums/:id/restaurants", restaurantController.getRestaurantsbyStadium);
+// This becomes: GET /api/stadiums/:id/restaurants
 
 // Get restaurants API
 router.get('/restaurants', async (req, res) => {
@@ -38,6 +65,7 @@ router.get('/restaurants', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+// This becomes: GET /api/restaurants
 
 // Get all restaurants for a specific team
 router.get('/team/:team/restaurants', async (req, res) => {
@@ -59,5 +87,10 @@ router.get('/team/:team/restaurants', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+// This becomes: GET /api/team/:team/restaurants
+
+// Health check
+router.get('/health', stadiumController.healthCheck);
+// This becomes: GET /api/health
 
 module.exports = router;
