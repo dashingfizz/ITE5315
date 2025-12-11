@@ -7,7 +7,7 @@
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 class="h4 mb-1">My Businesses</h2>
-          <p class="text-muted mb-0">View, edit, or remove the restaurants you’ve listed near stadiums.</p>
+          <p class="text-muted mb-0">View, search, and manage the restaurants you’ve listed near stadiums.</p>
         </div>
         <a href="/user/business/create" class="btn btn-custom">
           + Add New Business
@@ -15,6 +15,59 @@
       </div>
 
       <div id="alertContainer"></div>
+
+      {{!-- Filters / Search --}}
+      <div class="card mb-3 shadow-sm border-0">
+        <div class="card-body">
+          <form id="businessFilterForm" class="row g-3 align-items-end">
+            <div class="col-md-4">
+              <label for="filterSearch" class="form-label fw-bold">Search</label>
+              <input
+                type="text"
+                id="filterSearch"
+                class="form-control"
+                placeholder="Search by business name or alias"
+              />
+            </div>
+
+            <div class="col-md-2">
+              <label for="filterLeague" class="form-label fw-bold">League</label>
+              <select id="filterLeague" class="form-select">
+                <option value="">All leagues</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label for="filterStadium" class="form-label fw-bold">Stadium</label>
+              <select id="filterStadium" class="form-select">
+                <option value="">All stadiums</option>
+              </select>
+            </div>
+
+            <div class="col-md-1">
+              <label for="filterRating" class="form-label fw-bold">Min </label>
+              <select id="filterRating" class="form-select">
+                <option value="">Any</option>
+                <option value="3">3.0+</option>
+                <option value="3.5">3.5+</option>
+                <option value="4">4.0+</option>
+                <option value="4.5">4.5+</option>
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label for="filterPrice" class="form-label fw-bold">Price</label>
+              <select id="filterPrice" class="form-select">
+                <option value="">Any</option>
+                <option value="$">$</option>
+                <option value="$$">$$</option>
+                <option value="$$$">$$$</option>
+                <option value="$$$$">$$$$</option>
+              </select>
+            </div>
+          </form>
+        </div>
+      </div>
 
       <div class="card shadow-sm border-0">
         <div class="card-body p-0">
@@ -88,6 +141,9 @@
 
           <dt class="col-sm-3">Address</dt>
           <dd class="col-sm-9" id="viewAddress"></dd>
+
+          <dt class="col-sm-3">Map</dt>
+          <dd class="col-sm-9" id="viewMap"></dd>
 
           <dt class="col-sm-3">Distance</dt>
           <dd class="col-sm-9" id="viewDistance"></dd>
@@ -210,6 +266,20 @@
     if (editEl && window.bootstrap) editModal = new bootstrap.Modal(editEl);
     if (viewEl && window.bootstrap) viewModal = new bootstrap.Modal(viewEl);
 
+    // attach filter events
+    const searchInput = document.getElementById('filterSearch');
+    const leagueSelect = document.getElementById('filterLeague');
+    const stadiumSelect = document.getElementById('filterStadium');
+    const ratingSelect = document.getElementById('filterRating');
+    const priceSelect = document.getElementById('filterPrice');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+    }
+    [leagueSelect, stadiumSelect, ratingSelect, priceSelect].forEach(sel => {
+      if (sel) sel.addEventListener('change', applyFilters);
+    });
+
     loadBusinesses();
   });
 
@@ -252,59 +322,8 @@
         return;
       }
 
-      tbody.innerHTML = '';
-      businessesCache.forEach((b) => {
-        const tr = document.createElement('tr');
-        tr.dataset.id = b.id;
-
-        // thumbnail if image exists
-        let thumbHtml = '';
-        if (b.image_url) {
-          thumbHtml = `
-            <div class="mb-2">
-              <img
-                src="${escapeHtml(b.image_url)}"
-                alt="${escapeHtml(b.name || 'Business thumbnail')}"
-                class="img-thumbnail"
-                style="width: 60px; height: 60px; object-fit: cover;"
-              >
-            </div>
-          `;
-        }
-
-        tr.innerHTML = `
-          <td>
-            ${thumbHtml}
-            <div class="fw-semibold">${escapeHtml(b.name || '')}</div>
-            <div class="text-muted small">${escapeHtml(b.alias || '')}</div>
-          </td>
-          <td>
-            <div class="fw-semibold">${escapeHtml(b.stadiumName || '')}</div>
-          </td>
-          <td>
-            <div>${escapeHtml(b.league || '')}</div>
-            <div class="text-muted small">${escapeHtml(b.team || '')}</div>
-          </td>
-          <td>
-            ${b.rating ? (b.rating.toFixed ? b.rating.toFixed(1) : b.rating) : 'N/A'}
-          </td>
-          <td>
-            ${escapeHtml(b.city || '')}, ${escapeHtml(b.state || '')}
-          </td>
-          <td>
-            <button class="btn btn-sm btn-outline-secondary me-1" onclick="openViewModal('${b.id}')">
-              View
-            </button>
-            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('${b.id}')">
-              Edit
-            </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteBusiness('${b.id}')">
-              Delete
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      buildFilterOptions();
+      applyFilters(); // will render table
 
     } catch (err) {
       console.error('Error loading businesses:', err);
@@ -317,6 +336,150 @@
         </tr>
       `;
     }
+  }
+
+  function buildFilterOptions() {
+    const leagueSelect = document.getElementById('filterLeague');
+    const stadiumSelect = document.getElementById('filterStadium');
+    if (!leagueSelect || !stadiumSelect) return;
+
+    const leagues = new Set();
+    const stadiums = new Set();
+
+    businessesCache.forEach(b => {
+      if (b.league) leagues.add(b.league);
+      if (b.stadiumName) stadiums.add(b.stadiumName);
+    });
+
+    // reset options
+    leagueSelect.innerHTML = '<option value="">All leagues</option>';
+    stadiumSelect.innerHTML = '<option value="">All stadiums</option>';
+
+    Array.from(leagues).sort().forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = l;
+      leagueSelect.appendChild(opt);
+    });
+
+    Array.from(stadiums).sort().forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      stadiumSelect.appendChild(opt);
+    });
+  }
+
+  function applyFilters() {
+    const searchInput = document.getElementById('filterSearch');
+    const leagueSelect = document.getElementById('filterLeague');
+    const stadiumSelect = document.getElementById('filterStadium');
+    const ratingSelect = document.getElementById('filterRating');
+    const priceSelect = document.getElementById('filterPrice');
+
+    const search = (searchInput?.value || '').trim().toLowerCase();
+    const league = leagueSelect?.value || '';
+    const stadium = stadiumSelect?.value || '';
+    const minRatingStr = ratingSelect?.value || '';
+    const minRating = minRatingStr ? parseFloat(minRatingStr) : null;
+    const price = priceSelect?.value || '';
+
+    const filtered = businessesCache.filter(b => {
+      // search filter (name or alias)
+      if (search) {
+        const name = (b.name || '').toLowerCase();
+        const alias = (b.alias || '').toLowerCase();
+        if (!name.includes(search) && !alias.includes(search)) {
+          return false;
+        }
+      }
+
+      // league filter
+      if (league && b.league !== league) return false;
+
+      // stadium filter
+      if (stadium && b.stadiumName !== stadium) return false;
+
+      // price filter
+      if (price && b.price !== price) return false;
+
+      // min rating filter
+      if (minRating !== null) {
+        if (!b.rating || Number(b.rating) < minRating) return false;
+      }
+
+      return true;
+    });
+
+    renderBusinessTable(filtered);
+  }
+
+  function renderBusinessTable(list) {
+    const tbody = document.getElementById('businessTableBody');
+    tbody.innerHTML = '';
+
+    if (!list || list.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">
+            No businesses match your filters.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    list.forEach((b) => {
+      const tr = document.createElement('tr');
+      tr.dataset.id = b.id;
+
+      let thumbHtml = '';
+      if (b.image_url) {
+        thumbHtml = `
+          <div class="mb-2">
+            <img
+              src="${escapeHtml(b.image_url)}"
+              alt="${escapeHtml(b.name || 'Business thumbnail')}"
+              class="img-thumbnail"
+              style="width: 60px; height: 60px; object-fit: cover;"
+            >
+          </div>
+        `;
+      }
+
+      tr.innerHTML = `
+        <td>
+          ${thumbHtml}
+          <div class="fw-semibold">${escapeHtml(b.name || '')}</div>
+          <div class="text-muted small">${escapeHtml(b.alias || '')}</div>
+        </td>
+        <td>
+          <div class="fw-semibold">${escapeHtml(b.stadiumName || '')}</div>
+        </td>
+        <td>
+          <div>${escapeHtml(b.league || '')}</div>
+          <div class="text-muted small">${escapeHtml(b.team || '')}</div>
+        </td>
+        <td>
+          ${b.rating ? (b.rating.toFixed ? b.rating.toFixed(1) : b.rating) : 'N/A'}
+        </td>
+        <td>
+          ${escapeHtml(b.city || '')}, ${escapeHtml(b.state || '')}
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary me-1" onclick="openViewModal('${b.id}')">
+            View
+          </button>
+          <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('${b.id}')">
+            Edit
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteBusiness('${b.id}')">
+            Delete
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
   // VIEW MODAL
@@ -341,6 +504,13 @@
     const city = biz.city || (biz.location && biz.location.city) || '';
     const state = biz.state || (biz.location && biz.location.state) || '';
     const zip = biz.location && biz.location.zip_code ? biz.location.zip_code : '';
+
+    const mapsAddressParts = [address1, city, state, zip].filter(Boolean);
+    let mapsLink = '';
+    if (mapsAddressParts.length) {
+      const query = encodeURIComponent(mapsAddressParts.join(', '));
+      mapsLink = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    }
 
     document.getElementById('viewName').textContent = name;
     document.getElementById('viewAlias').textContent = alias;
@@ -374,6 +544,17 @@
 
     document.getElementById('viewAddress').textContent =
       [address1, `${city}${city && state ? ', ' : ''}${state} ${zip}`.trim()].filter(Boolean).join(' | ');
+
+    const mapElem = document.getElementById('viewMap');
+    if (mapsLink) {
+      mapElem.innerHTML = `
+        <a href="${mapsLink}" target="_blank" rel="noopener noreferrer">
+          View on Google Maps
+        </a>
+      `;
+    } else {
+      mapElem.textContent = 'Not available';
+    }
 
     document.getElementById('viewDistance').textContent = distance;
 
@@ -498,8 +679,8 @@
     return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
+      .replace(/>/g, '&quot;')
       .replace(/'/g, '&#039;');
   }
 </script>
+{{! End of views/user/my-businesses.hbs }}

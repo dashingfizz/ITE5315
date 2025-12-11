@@ -21,7 +21,7 @@ function ensureAuth(req, res, next) {
 // Optional: only allow guests (not logged in)
 function ensureGuest(req, res, next) {
   if (req.session && req.session.user) {
-    return res.redirect("/dashboard"); // already logged in
+    return res.redirect("/statistics"); // already logged in
   }
   return next();
 }

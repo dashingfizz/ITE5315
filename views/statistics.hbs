@@ -1,0 +1,136 @@
+{{> header}}
+
+<div class="container my-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="h4 mb-1">Business Analytics</h2>
+      <p class="text-muted mb-0">Insights about your listed businesses.</p>
+    </div>
+    <a href="/user/business/my-businesses" class="btn btn-custom">
+      Manage Businesses
+    </a>
+  </div>
+
+  <div id="dashboardAlertContainer"></div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Total Businesses</div>
+          <div class="h4 mb-0" id="statTotalBusinesses">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Stadiums Covered</div>
+          <div class="h4 mb-0" id="statTotalStadiums">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Average Rating</div>
+          <div class="h4 mb-0" id="statAverageRating">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Most Active League</div>
+          <div class="h6 mb-0" id="statMostActiveLeague">–</div>
+          <div class="text-muted small" id="statMostActiveLeagueCount"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="card-title h6 mb-3">Top Rated Business</h5>
+          <div id="topBusinessDetails" class="text-muted small">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="card-title h6 mb-3">Most Recently Added</h5>
+          <div id="recentBusinessDetails" class="text-muted small">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{> footer}}
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    loadBusinessStats();
+  });
+
+  async function loadBusinessStats() {
+    try {
+      const res = await fetch('/api/business/stats');
+      const data = await res.json();
+
+      if (!data.success) {
+        showDashboardAlert('danger', data.message);
+        return;
+      }
+
+      const stats = data.stats;
+
+      document.getElementById('statTotalBusinesses').textContent = stats.totalBusinesses || 0;
+      document.getElementById('statTotalStadiums').textContent = stats.totalStadiums || 0;
+      document.getElementById('statAverageRating').textContent =
+        stats.averageRating ? stats.averageRating.toFixed(2) : "–";
+
+      if (stats.mostActiveLeague) {
+        document.getElementById('statMostActiveLeague').textContent =
+          stats.mostActiveLeague.league;
+        document.getElementById('statMostActiveLeagueCount').textContent =
+          stats.mostActiveLeague.count + " businesses";
+      }
+
+      // Format business blocks
+      const top = stats.highestRatedBusiness;
+      const recent = stats.mostRecentBusiness;
+
+      document.getElementById('topBusinessDetails').innerHTML = top ? `
+        <strong>${top.name}</strong><br>
+        ⭐ ${top.rating} (${top.review_count} reviews)<br>
+        ${top.league} — ${top.team}<br>
+        <span class="text-muted">${top.stadiumName}</span>
+      ` : "No rating data yet.";
+
+      document.getElementById('recentBusinessDetails').innerHTML = recent ? `
+        <strong>${recent.name}</strong><br>
+        ${recent.league} — ${recent.team}<br>
+        <span class="text-muted">${recent.stadiumName}</span><br>
+        <span class="text-muted small">Added: ${new Date(recent.createdAt).toLocaleString()}</span>
+      ` : "No businesses added yet.";
+
+    } catch (err) {
+      showDashboardAlert('danger', 'Failed to load analytics.');
+    }
+  }
+
+  function showDashboardAlert(type, msg) {
+    const div = document.createElement('div');
+    div.className = `alert alert-${type}`;
+    div.textContent = msg;
+    document.getElementById('dashboardAlertContainer').appendChild(div);
+  }
+</script>

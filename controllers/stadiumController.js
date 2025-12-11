@@ -16,7 +16,7 @@ const stadiumController = {
     getHome: async (req, res) => {
         try {
             if (req.session && req.session.user) {
-                return res.redirect("/dashboard");
+                return res.redirect("/user/business/statistics");
             }
             console.log('Fetching data from MongoDB...');
             
@@ -590,6 +590,137 @@ updateBusiness: async (req, res) => {
     });
   }
 },
+
+
+        // Get analytics for the user's businesses
+    getUserBusinessStats: async (req, res) => {
+        try {
+            const userId = req.session.user ? req.session.user._id : null;
+
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'User not authenticated'
+                });
+            }
+
+            // Find all stadiums that have businesses created by this user
+            const stadiums = await Stadium.find({
+                'businesses.createdBy': userId
+            });
+
+            let totalBusinesses = 0;
+            const stadiumSet = new Set();
+            const leagueSet = new Set();
+            const leagueCounts = {};
+
+            let sumRating = 0;
+            let ratingCount = 0;
+
+            let highestRatedBusiness = null;
+            let mostRecentBusiness = null;
+
+            stadiums.forEach(stadium => {
+                stadium.businesses.forEach(business => {
+                    if (!business.createdBy || business.createdBy.toString() !== userId.toString()) {
+                        return;
+                    }
+
+                    totalBusinesses++;
+                    stadiumSet.add(stadium.stadium);
+                    leagueSet.add(stadium.league);
+
+                    // league counts for "most active league"
+                    leagueCounts[stadium.league] = (leagueCounts[stadium.league] || 0) + 1;
+
+                    // ratings for average
+                    if (business.rating !== undefined && business.rating !== null && !isNaN(business.rating)) {
+                        sumRating += Number(business.rating);
+                        ratingCount++;
+                    }
+
+                    // highest rated business (tie-break with review_count)
+                    if (!highestRatedBusiness) {
+                        highestRatedBusiness = {
+                            ...business.toObject(),
+                            stadiumName: stadium.stadium,
+                            team: stadium.team,
+                            league: stadium.league
+                        };
+                    } else {
+                        const currentBest = highestRatedBusiness;
+                        const bRating = Number(business.rating) || 0;
+                        const bestRating = Number(currentBest.rating) || 0;
+
+                        if (
+                            bRating > bestRating ||
+                            (bRating === bestRating &&
+                              (Number(business.review_count) || 0) >
+                              (Number(currentBest.review_count) || 0))
+                        ) {
+                            highestRatedBusiness = {
+                                ...business.toObject(),
+                                stadiumName: stadium.stadium,
+                                team: stadium.team,
+                                league: stadium.league
+                            };
+                        }
+                    }
+
+                    // most recent business
+                    const bCreatedAt = business.createdAt ? new Date(business.createdAt) : null;
+                    const currentMostRecent = mostRecentBusiness && mostRecentBusiness.createdAt
+                        ? new Date(mostRecentBusiness.createdAt)
+                        : null;
+
+                    if (bCreatedAt && (!currentMostRecent || bCreatedAt > currentMostRecent)) {
+                        mostRecentBusiness = {
+                            ...business.toObject(),
+                            stadiumName: stadium.stadium,
+                            team: stadium.team,
+                            league: stadium.league
+                        };
+                    }
+                });
+            });
+
+            const averageRating =
+                ratingCount > 0 ? Number((sumRating / ratingCount).toFixed(2)) : null;
+
+            // compute most active league
+            let mostActiveLeague = null;
+            let mostActiveCount = 0;
+            Object.keys(leagueCounts).forEach(league => {
+                if (leagueCounts[league] > mostActiveCount) {
+                    mostActiveLeague = league;
+                    mostActiveCount = leagueCounts[league];
+                }
+            });
+
+            return res.status(200).json({
+                success: true,
+                stats: {
+                    totalBusinesses,
+                    totalStadiums: stadiumSet.size,
+                    totalLeagues: leagueSet.size,
+                    averageRating,
+                    mostActiveLeague: mostActiveLeague
+                        ? { league: mostActiveLeague, count: mostActiveCount }
+                        : null,
+                    highestRatedBusiness,
+                    mostRecentBusiness
+                }
+            });
+
+        } catch (error) {
+            console.error('Error fetching user business stats:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error fetching user business stats',
+                error: error.message
+            });
+        }
+    },
 
 
 

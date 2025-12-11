@@ -59,6 +59,14 @@ router.get('/business/my-businesses', ensureAuth, (req, res) => {
   });
 });
 
+// Business Statistics Dashboard Page
+router.get("/business/statistics", ensureAuth, (req, res) => {
+  res.render("statistics", {
+    title: "Business Statistics"
+  });
+});
+
+
 
 
 module.exports = router;
