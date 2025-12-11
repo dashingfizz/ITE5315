@@ -142,12 +142,10 @@ app.use((err, req, res, next) => {
 // Start server
 http.createServer(app).listen(config.http_port, () => {
     console.log(`HTTP Server running on http://localhost:${config.http_port}`);
-    console.log(`MongoDB: ${config.url}`);
 });
 
 https.createServer(https_options, app).listen(config.https_port, () => {
     console.log(`HTTPS Server running on https://localhost:${config.https_port}`);
-    console.log(`MongoDB: ${config.url}`);
 });
 
 /*
