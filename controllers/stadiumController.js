@@ -555,7 +555,6 @@ const stadiumController = {
 
 
             // -------- Editable simple fields --------
-
             if (typeof body.name === 'string') {
                 b.name = body.name.trim();
             }
