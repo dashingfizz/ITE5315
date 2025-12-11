@@ -19,16 +19,16 @@ const stadiumController = {
                 return res.redirect("/user/business/statistics");
             }
             console.log('Fetching data from MongoDB...');
-            
+
             const leagues = await Stadium.distinct('league').maxTimeMS(30000);
             const teams = await Stadium.distinct('team').maxTimeMS(30000);
-            
+
             console.log('Leagues found:', leagues);
             console.log('Teams found:', teams.length, 'teams');
-            
+
             leagues.sort();
             teams.sort();
-            
+
             res.render('index', {
                 title: 'GameDay Eats - Find Restaurants Near Your Stadium',
                 leagues: leagues,
@@ -76,11 +76,11 @@ const stadiumController = {
         try {
             const team = req.params.team;
             const stadiumData = await Stadium.findOne({ team: team });
-            
+
             if (!stadiumData) {
                 return res.json(null);
             }
-            
+
             res.json({
                 stadium: stadiumData.stadium,
                 city: stadiumData.city,
@@ -94,152 +94,21 @@ const stadiumController = {
         }
     },
 
-
-// Search restaurants
-searchRestaurants: async (req, res) => {
-    try {
-        // Helper to safely get parameters from POST or GET
-        const getParam = (name) => ((req.body?.[name]) || req.query[name] || "").trim();
-
-        // Query Parameters
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 15;
-        const category = getParam('category') || "";
-        const sort = getParam('sort') || "rating_desc";
-        const league = getParam('league');
-        const team = getParam('team');
-        const stadium = getParam('stadium');
-
-        // Require at least one search criteria
-        if (!league && !team && !stadium) {
-            return res.render('results', {
-                title: 'Search Results',
-                error: 'Please provide at least one search criteria (league, team, or stadium)',
-                restaurants: [],
-                searchCount: 0
-            });
-        }
-
-        console.log('Search criteria:', { league, team, stadium });
-
-        // Build database query
-        const query = {};
-        if (league) query.league = league;
-        if (team) query.team = team;
-        if (stadium && stadium !== 'Stadium information not available') query.stadium = stadium;
-
-        console.log('Database query:', query);
-
-        // Fetch stadium data
-        const stadiumData = await Stadium.findOne(query).maxTimeMS(10000);
-
-        if (!stadiumData) {
-            console.log('No stadium found matching criteria');
-            return res.render('results', {
-                title: 'Search Results - No Matches Found',
-                league,
-                team,
-                stadium: stadium || 'Not specified',
-                restaurants: [],
-                searchCount: 0,
-                message: 'No stadium found matching your search criteria. Please try different selections.'
-            });
-        }
-
-        let restaurants = stadiumData.businesses || [];
-        console.log(`Found ${restaurants.length} restaurants for ${stadiumData.team}`);
-
-        // Populate category dropdown
-        const allCategories = new Set();
-        restaurants.forEach(r => {
-            r.categories?.forEach(c => allCategories.add(c.title));
-        });
-
-        // Filter by category
-        if (category) {
-            const catLower = category.toLowerCase();
-            restaurants = restaurants.filter(b =>
-                b.categories?.some(c =>
-                    c.title.toLowerCase().includes(catLower) ||
-                    c.alias.toLowerCase().includes(catLower)
-                )
-            );
-        }
-
-        // Sort restaurants
-        restaurants.sort((a, b) => {
-            switch (sort) {
-                case "rating_asc": return a.rating - b.rating;
-                case "rating_desc": return b.rating - a.rating;
-                case "reviews_asc": return a.review_count - b.review_count;
-                case "reviews_desc": return b.review_count - a.review_count;
-                case "distance_asc": return a.distance - b.distance;
-                default: return b.rating - a.rating;
-            }
-        });
-
-        // Pagination
-        const totalRestaurants = restaurants.length;
-        const totalPages = Math.ceil(totalRestaurants / limit);
-        const startIndex = (page - 1) * limit;
-        const paginatedRestaurants = restaurants.slice(startIndex, startIndex + limit);
-
-        // Render results
-        res.render('results', {
-            title: `Restaurants Near ${stadiumData.stadium}`,
-            league: stadiumData.league,
-            team: stadiumData.team,
-            stadium: stadiumData.stadium,
-            city: stadiumData.city,
-            state: stadiumData.state,
-            restaurants: paginatedRestaurants,
-            searchCount: totalRestaurants,
-            currentPage: page,
-            totalPages,
-            limit,
-            categories: Array.from(allCategories).sort(),
-            selectedCategory: category,
-            selectedSort: sort,
-            success: `Found ${totalRestaurants} restaurants near ${stadiumData.stadium}`
-        });
-
-    } catch (error) {
-        console.error('Error searching restaurants:', error);
-
-        const leagueSafe = (req.body?.league) || req.query.league || "";
-        const teamSafe = (req.body?.team) || req.query.team || "";
-        const stadiumSafe = (req.body?.stadium) || req.query.stadium || "";
-
-        res.render('results', {
-            title: 'Search Error',
-            league: leagueSafe,
-            team: teamSafe,
-            stadium: stadiumSafe,
-            restaurants: [],
-            searchCount: 0,
-            error: 'Sorry, there was an error processing your search. Please try again.'
-        });
-    }
-},
-
-
-/*
-
-    
+    // Search restaurants
     searchRestaurants: async (req, res) => {
         try {
+            const getParam = (name) => ((req.body?.[name]) || req.query[name] || "").trim();
+
             // Query Parameters
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 15;
-            const category = req.query.category || "";
-            const sort = req.query.sort || "rating_desc";
+            const category = getParam('category') || "";
+            const sort = getParam('sort') || "rating_desc";
+            const league = getParam('league');
+            const team = getParam('team');
+            const stadium = getParam('stadium');
 
-            // support both POST (initial search) and GET (pagination/filter)
-            const league = req.body.league || req.query.league || "";
-            const team = req.body.team || req.query.team || "";
-            const stadium = req.body.stadium || req.query.stadium || "";
-
-            
+            // Require at least one search criteria
             if (!league && !team && !stadium) {
                 return res.render('results', {
                     title: 'Search Results',
@@ -250,18 +119,18 @@ searchRestaurants: async (req, res) => {
             }
 
             console.log('Search criteria:', { league, team, stadium });
-            
+
+            // Build database query
             const query = {};
-            if (league && league !== '') query.league = league;
-            if (team && team !== '') query.team = team;
-            if (stadium && stadium !== '' && stadium !== 'Stadium information not available') {
-                query.stadium = stadium;
-            }
+            if (league) query.league = league;
+            if (team) query.team = team;
+            if (stadium && stadium !== 'Stadium information not available') query.stadium = stadium;
 
             console.log('Database query:', query);
-            
+
+            // Fetch stadium data
             const stadiumData = await Stadium.findOne(query).maxTimeMS(10000);
-            
+
             if (!stadiumData) {
                 console.log('No stadium found matching criteria');
                 return res.render('results', {
@@ -278,40 +147,32 @@ searchRestaurants: async (req, res) => {
             let restaurants = stadiumData.businesses || [];
             console.log(`Found ${restaurants.length} restaurants for ${stadiumData.team}`);
 
-            // Populate category dropdown with restaurant categories
+            // Populate category dropdown
             const allCategories = new Set();
             restaurants.forEach(r => {
-                if (r.categories?.length) {
-                    r.categories.forEach(c => allCategories.add(c.title));
-                }
+                r.categories?.forEach(c => allCategories.add(c.title));
             });
 
-            // Filter and sort
-
+            // Filter by category
             if (category) {
-                const cat = category.toLowerCase();
+                const catLower = category.toLowerCase();
                 restaurants = restaurants.filter(b =>
                     b.categories?.some(c =>
-                        c.title.toLowerCase().includes(cat) ||
-                        c.alias.toLowerCase().includes(cat)
+                        c.title.toLowerCase().includes(catLower) ||
+                        c.alias.toLowerCase().includes(catLower)
                     )
                 );
             }
-            
+
+            // Sort restaurants
             restaurants.sort((a, b) => {
                 switch (sort) {
-                    case "rating_asc":
-                        return a.rating - b.rating;
-                    case "rating_desc":
-                        return b.rating - a.rating;
-                    case "reviews_asc":
-                        return a.review_count - b.review_count;
-                    case "reviews_desc":
-                        return b.review_count - a.review_count;
-                    case "distance_asc":
-                        return a.distance - b.distance;
-                default:
-                    return b.rating - a.rating;
+                    case "rating_asc": return a.rating - b.rating;
+                    case "rating_desc": return b.rating - a.rating;
+                    case "reviews_asc": return a.review_count - b.review_count;
+                    case "reviews_desc": return b.review_count - a.review_count;
+                    case "distance_asc": return a.distance - b.distance;
+                    default: return b.rating - a.rating;
                 }
             });
 
@@ -319,8 +180,9 @@ searchRestaurants: async (req, res) => {
             const totalRestaurants = restaurants.length;
             const totalPages = Math.ceil(totalRestaurants / limit);
             const startIndex = (page - 1) * limit;
-            const paginatedRestaurants = restaurants.slice(startIndex, startIndex + Number(limit));
+            const paginatedRestaurants = restaurants.slice(startIndex, startIndex + limit);
 
+            // Render results
             res.render('results', {
                 title: `Restaurants Near ${stadiumData.stadium}`,
                 league: stadiumData.league,
@@ -341,33 +203,32 @@ searchRestaurants: async (req, res) => {
 
         } catch (error) {
             console.error('Error searching restaurants:', error);
-            
-            const league = (req.body && req.body.league) || req.query.league || "";
-            const team = (req.body && req.body.team) || req.query.team || "";
-            const stadium = (req.body && req.body.stadium) || req.query.stadium || "";
+
+            const leagueSafe = (req.body?.league) || req.query.league || "";
+            const teamSafe = (req.body?.team) || req.query.team || "";
+            const stadiumSafe = (req.body?.stadium) || req.query.stadium || "";
 
             res.render('results', {
                 title: 'Search Error',
-                league,
-                team,
-                stadium,
+                league: leagueSafe,
+                team: teamSafe,
+                stadium: stadiumSafe,
                 restaurants: [],
                 searchCount: 0,
                 error: 'Sorry, there was an error processing your search. Please try again.'
             });
         }
     },
-    */
 
 
     // Search by stadium name
     searchByStadiumName: async (req, res) => {
         try {
             const stadiumName = req.params.stadiumName;
-            const stadiumData = await Stadium.findOne({ 
-                stadium: new RegExp(stadiumName, 'i') 
+            const stadiumData = await Stadium.findOne({
+                stadium: new RegExp(stadiumName, 'i')
             });
-            
+
             if (stadiumData) {
                 res.redirect(`/search-results?team=${encodeURIComponent(stadiumData.team)}`);
             } else {
@@ -516,10 +377,10 @@ searchRestaurants: async (req, res) => {
 
             let imageUrl = '';
             if (req.file) {
-            imageUrl = '/uploads/' + req.file.filename;  
+                imageUrl = '/uploads/' + req.file.filename;
             } else if (req.body.image_url) {
-            imageUrl = req.body.image_url.trim();
-            } 
+                imageUrl = req.body.image_url.trim();
+            }
 
             // Create new business object matching the schema
             const newBusiness = {
@@ -563,10 +424,10 @@ searchRestaurants: async (req, res) => {
 
             // Add the business to the stadium's businesses array
             stadiumDoc.businesses.push(newBusiness);
-            
+
             // Update total count
             stadiumDoc.total = stadiumDoc.businesses.length;
-            
+
             // Save the updated stadium document
             await stadiumDoc.save();
 
@@ -594,7 +455,7 @@ searchRestaurants: async (req, res) => {
     getUserBusinesses: async (req, res) => {
         try {
             const userId = req.params.userId || (req.session.user ? req.session.user._id : null);
-            
+
             if (!userId) {
                 return res.status(401).json({
                     success: false,
@@ -640,149 +501,149 @@ searchRestaurants: async (req, res) => {
         }
     },
 
-   // Update user's business
-updateBusiness: async (req, res) => {
-  try {
-    const { businessId } = req.params;
-    const userId = req.session.user ? req.session.user._id : null;
+    // Update user's business
+    updateBusiness: async (req, res) => {
+        try {
+            const { businessId } = req.params;
+            const userId = req.session.user ? req.session.user._id : null;
 
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'User not authenticated'
-      });
-    }
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'User not authenticated'
+                });
+            }
 
-    // Find stadium containing this business created by this user
-    const stadium = await Stadium.findOne({
-      'businesses.id': businessId,
-      'businesses.createdBy': userId
-    });
+            // Find stadium containing this business created by this user
+            const stadium = await Stadium.findOne({
+                'businesses.id': businessId,
+                'businesses.createdBy': userId
+            });
 
-    if (!stadium) {
-      return res.status(404).json({
-        success: false,
-        message: 'Business not found or you do not have permission to edit it.'
-      });
-    }
+            if (!stadium) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Business not found or you do not have permission to edit it.'
+                });
+            }
 
-    // Find the business index
-    const businessIndex = stadium.businesses.findIndex(b =>
-      b.id === businessId &&
-      b.createdBy &&
-      b.createdBy.toString() === userId.toString()
-    );
+            // Find the business index
+            const businessIndex = stadium.businesses.findIndex(b =>
+                b.id === businessId &&
+                b.createdBy &&
+                b.createdBy.toString() === userId.toString()
+            );
 
-    if (businessIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: 'Business not found or you do not have permission to edit it.'
-      });
-    }
+            if (businessIndex === -1) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Business not found or you do not have permission to edit it.'
+                });
+            }
 
-    const b = stadium.businesses[businessIndex];
-    const body = req.body || {};
+            const b = stadium.businesses[businessIndex];
+            const body = req.body || {};
 
-    // ---- Image update (optional) ----
-     if (req.file) {
-    // new uploaded image
-    b.image_url = '/uploads/' + req.file.filename;
-    } else if (body.image_url) {
-    // or plain URL typed by user in form
-    b.image_url = body.image_url.trim();
-    }
-
-
-    // -------- Editable simple fields --------
-
-    if (typeof body.name === 'string') {
-      b.name = body.name.trim();
-    }
-
-    if (typeof body.alias === 'string') {
-      b.alias = body.alias.trim();
-    }
-
-    if (body.rating !== undefined) {
-      const ratingNum = parseFloat(body.rating);
-      if (!isNaN(ratingNum) && ratingNum >= 0 && ratingNum <= 5) {
-        b.rating = ratingNum;
-      }
-    }
-
-    if (body.review_count !== undefined) {
-      const rc = parseInt(body.review_count, 10);
-      if (!isNaN(rc) && rc >= 0) {
-        b.review_count = rc;
-      }
-    }
-
-    if (typeof body.price === 'string') {
-      b.price = body.price;
-    }
-
-    if (typeof body.phone === 'string') {
-      const phone = body.phone.trim();
-      b.phone = phone;
-      b.display_phone = phone;
-    }
-
-    if (typeof body.url === 'string') {
-      b.url = body.url.trim();
-    }
-
-    if (body.distance !== undefined) {
-      const dist = parseFloat(body.distance);
-      if (!isNaN(dist) && dist >= 0) {
-        b.distance = dist;
-      }
-    }
-
-    // -------- Address line (but NOT city/state) --------
-    b.location = b.location || {};
-
-    if (typeof body.address1 === 'string') {
-      b.location.address1 = body.address1.trim();
-    }
-
-    if (typeof body.zip_code === 'string') {
-      b.location.zip_code = body.zip_code.trim();
-    }
-
-    // NOTE: we intentionally IGNORE body.city and body.state
-    // Stadium city/state define where this business belongs.
-
-    // Rebuild display_address based on stadium city/state + address1/zip
-    const city = stadium.city || '';
-    const state = stadium.state || '';
-    b.location.display_address = [
-      b.location.address1 || '',
-      `${city}${city && state ? ', ' : ''}${state} ${b.location.zip_code || ''}`.trim()
-    ].filter(Boolean);
-
-    // Timestamp
-    b.updatedAt = new Date();
-
-    await stadium.save();
-
-    return res.status(200).json({
-      success: true,
-      message: 'Business updated successfully!',
-      business: b
-    });
-
-  } catch (error) {
-    console.error('Error updating business:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error updating business',
-      error: error.message
-    });
-  }
-},
+            // ---- Image update (optional) ----
+            if (req.file) {
+                // new uploaded image
+                b.image_url = '/uploads/' + req.file.filename;
+            } else if (body.image_url) {
+                // or plain URL typed by user in form
+                b.image_url = body.image_url.trim();
+            }
 
 
-        // Get analytics for the user's businesses
+            // -------- Editable simple fields --------
+
+            if (typeof body.name === 'string') {
+                b.name = body.name.trim();
+            }
+
+            if (typeof body.alias === 'string') {
+                b.alias = body.alias.trim();
+            }
+
+            if (body.rating !== undefined) {
+                const ratingNum = parseFloat(body.rating);
+                if (!isNaN(ratingNum) && ratingNum >= 0 && ratingNum <= 5) {
+                    b.rating = ratingNum;
+                }
+            }
+
+            if (body.review_count !== undefined) {
+                const rc = parseInt(body.review_count, 10);
+                if (!isNaN(rc) && rc >= 0) {
+                    b.review_count = rc;
+                }
+            }
+
+            if (typeof body.price === 'string') {
+                b.price = body.price;
+            }
+
+            if (typeof body.phone === 'string') {
+                const phone = body.phone.trim();
+                b.phone = phone;
+                b.display_phone = phone;
+            }
+
+            if (typeof body.url === 'string') {
+                b.url = body.url.trim();
+            }
+
+            if (body.distance !== undefined) {
+                const dist = parseFloat(body.distance);
+                if (!isNaN(dist) && dist >= 0) {
+                    b.distance = dist;
+                }
+            }
+
+            // -------- Address line (but NOT city/state) --------
+            b.location = b.location || {};
+
+            if (typeof body.address1 === 'string') {
+                b.location.address1 = body.address1.trim();
+            }
+
+            if (typeof body.zip_code === 'string') {
+                b.location.zip_code = body.zip_code.trim();
+            }
+
+            // NOTE: we intentionally IGNORE body.city and body.state
+            // Stadium city/state define where this business belongs.
+
+            // Rebuild display_address based on stadium city/state + address1/zip
+            const city = stadium.city || '';
+            const state = stadium.state || '';
+            b.location.display_address = [
+                b.location.address1 || '',
+                `${city}${city && state ? ', ' : ''}${state} ${b.location.zip_code || ''}`.trim()
+            ].filter(Boolean);
+
+            // Timestamp
+            b.updatedAt = new Date();
+
+            await stadium.save();
+
+            return res.status(200).json({
+                success: true,
+                message: 'Business updated successfully!',
+                business: b
+            });
+
+        } catch (error) {
+            console.error('Error updating business:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Error updating business',
+                error: error.message
+            });
+        }
+    },
+
+
+    // Get analytics for the user's businesses
     getUserBusinessStats: async (req, res) => {
         try {
             const userId = req.session.user ? req.session.user._id : null;
@@ -845,8 +706,8 @@ updateBusiness: async (req, res) => {
                         if (
                             bRating > bestRating ||
                             (bRating === bestRating &&
-                              (Number(business.review_count) || 0) >
-                              (Number(currentBest.review_count) || 0))
+                                (Number(business.review_count) || 0) >
+                                (Number(currentBest.review_count) || 0))
                         ) {
                             highestRatedBusiness = {
                                 ...business.toObject(),
@@ -942,7 +803,7 @@ updateBusiness: async (req, res) => {
 
             // Filter out the business to delete
             const initialLength = stadium.businesses.length;
-            stadium.businesses = stadium.businesses.filter(b => 
+            stadium.businesses = stadium.businesses.filter(b =>
                 !(b.id === businessId && b.createdBy.toString() === userId.toString())
             );
 
@@ -956,7 +817,7 @@ updateBusiness: async (req, res) => {
 
             // Update total count
             stadium.total = stadium.businesses.length;
-            
+
             await stadium.save();
 
             res.status(200).json({
@@ -980,22 +841,22 @@ updateBusiness: async (req, res) => {
         try {
             await mongoose.connection.db.admin().ping();
             const count = await Stadium.countDocuments();
-            
-            res.json({ 
-                status: 'OK', 
+
+            res.json({
+                status: 'OK',
                 database: 'Connected',
                 documentCount: count,
                 timestamp: new Date().toISOString()
             });
         } catch (error) {
-            res.status(500).json({ 
-                status: 'Error', 
+            res.status(500).json({
+                status: 'Error',
                 database: 'Disconnected',
-                error: error.message 
+                error: error.message
             });
         }
     }
-    
+
 };
 
 module.exports = stadiumController;

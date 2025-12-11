@@ -32,7 +32,7 @@ router.post("/change-password", ensureAuth, controller.changePassword);
 // Delete password route
 router.delete("/delete-account", ensureAuth, controller.deleteAccount);
 
-// GET /user/business/create  → show Add Business form
+// GET /user/business/create - show add business form
 router.get("/business/create", ensureAuth, async (req, res) => {
   console.log("GET /user/business/create route hit");
   try {
