@@ -13,12 +13,19 @@ const express = require('express');
 const mongoose = require('mongoose');
 const config = require("./config/database");
 const fs = require('fs');
+const http = require('http');
+const https = require('https');
 const path = require('path');
 const hbs = require('hbs');
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
 const app = express();
+
+const https_options = {
+    key: fs.readFileSync(__dirname + '/server.key'),
+    cert: fs.readFileSync(__dirname + '/server.crt')
+}
 
 // Middleware for body parsing and fetching static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -133,10 +140,22 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
+http.createServer(app).listen(config.http_port, () => {
+    console.log(`HTTP Server running on http://localhost:${config.http_port}`);
+    console.log(`MongoDB: ${config.url}`);
+});
+
+https.createServer(https_options, app).listen(config.https_port, () => {
+    console.log(`HTTPS Server running on https://localhost:${config.https_port}`);
+    console.log(`MongoDB: ${config.url}`);
+});
+
+/*
 app.listen(config.port, () => {
     console.log(`Server running on http://localhost:${config.port}`);
     console.log(`MongoDB: ${config.url}`);
     console.log(`Partials directory: ${partialsDir}`);
 });
+*/
 
 module.exports = app;

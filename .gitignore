@@ -17,3 +17,12 @@ node_modules
 .vercel
 .env
 .env*.local
+
+# ssl certificates and keys
+*.key
+*.crt
+*.pem
+*.pfx
+*.csr
+ssl/
+certs/

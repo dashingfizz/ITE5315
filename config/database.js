@@ -12,6 +12,7 @@ require("dotenv").config();
 
 module.exports = {
     url: process.env.MONGO_URI,
-    port: process.env.PORT || 8000,
+    http_port: process.env.HTTP_PORT || 8000,
+    https_port: process.env.HTTPS_PORT || 4433,
     env: process.env.NODE_ENV || "development"
 };
