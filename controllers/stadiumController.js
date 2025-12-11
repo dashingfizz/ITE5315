@@ -772,8 +772,6 @@ const stadiumController = {
         }
     },
 
-
-
     // Delete user's business
     deleteBusiness: async (req, res) => {
         try {
