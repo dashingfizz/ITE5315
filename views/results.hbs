@@ -38,8 +38,10 @@
         </div>
     </div>
 
-    <!-- Results Count -->
+    <!-- Search Functions -->
     <div class="row mb-4">
+
+        <!-- Results Count and Search -->
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="results-count">
@@ -50,7 +52,50 @@
                 </a>
             </div>
         </div>
+
+        <form method="GET" class="row g-3 mb-4">
+                <input type="hidden" name="limit" value="{{limit}}">
+                
+                <!-- Preserve search context -->
+                <input type="hidden" name="league" value="{{league}}">
+                <input type="hidden" name="team" value="{{team}}">
+                <input type="hidden" name="stadium" value="{{stadium}}">
+                <input type="hidden" name="page" value="1">
+                <input type="hidden" name="limit" value="{{limit}}">
+                
+                <!-- Sort -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Sort By</label>
+                    <select name="sort" class="form-select">
+                        <option value="">Default</option>
+                        <option value="rating_desc" {{#if (eq selectedSort "rating_desc")}}selected{{/if}}>Rating (High → Low)</option>
+                        <option value="rating_asc" {{#if (eq selectedSort "rating_asc")}}selected{{/if}}>Rating (Low → High)</option>
+                        <option value="reviews_desc" {{#if (eq selectedSort "reviews_desc")}}selected{{/if}}>Reviews (Most → Least)</option>
+                        <option value="reviews_asc" {{#if (eq selectedSort "reviews_asc")}}selected{{/if}}>Reviews (Least → Most)</option>
+                        <option value="distance_asc" {{#if (eq selectedSort "distance_asc")}}selected{{/if}}>Distance (Closest)</option>
+                    </select>
+                </div>
+                
+                <!-- Filter -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Filter by Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {{#each categories}}
+                            <option value="{{this}}" {{#if (eq ../selectedCategory this)}}selected{{/if}}>
+                            {{this}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+                
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100">Apply</button>
+                </div>
+        </form>
+    
     </div>
+
 
     <!-- Restaurant Cards -->
     <div class="row">
@@ -140,16 +185,60 @@
         {{/each}}
     </div>
 
-    <!-- Back to Search -->
-    {{#if restaurants.length}}
-    <div class="row mt-4">
-        <div class="col-12 text-center">
-            <a href="/" class="btn btn-outline-custom btn-lg">
-                🔍 Perform New Search
-            </a>
-        </div>
+    <!-- Pagination -->
+    {{#if totalPages}}
+    <div class="d-flex justify-content-center mt-4"></div>
+        <nav style="overflow-x:auto;">
+            <ul id="pagination" class="pagination flex-nowrap">
+
+                {{!-- Previous --}}
+                <li class="page-item {{#if (eq currentPage 1)}}disabled{{/if}}">
+                    <a class="page-link"
+                       href="?page={{subtract currentPage 1}}
+                       &limit={{limit}}
+                       &category={{selectedCategory}}
+                       &sort={{selectedSort}}
+                       &league={{league}}
+                       &team={{team}}
+                       &stadium={{stadium}}">
+                        Previous
+                    </a>
+                </li>
+
+                {{!-- Page Numbers --}}
+                {{#each (range 1 totalPages)}}
+                    <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+                    <a class="page-link"
+                       href="?page={{this}}
+                       &limit={{../limit}}
+                       &category={{../selectedCategory}}
+                       &sort={{../selectedSort}}
+                       &league={{../league}}
+                       &team={{../team}}
+                       &stadium={{../stadium}}">
+                        {{this}}
+                    </a>
+                    </li>
+                {{/each}}
+
+                {{!-- Next --}}
+                <li class="page-item {{#if (eq currentPage totalPages)}}disabled{{/if}}">
+                    <a class="page-link"
+                       href="?page={{add currentPage 1}}
+                       &limit={{limit}}
+                       &category={{selectedCategory}}
+                       &sort={{selectedSort}}
+                       &league={{league}}
+                       &team={{team}}
+                       &stadium={{stadium}}">
+                        Next
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
     {{/if}}
+
 </div>
 
 {{> footer}}

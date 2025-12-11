@@ -94,10 +94,151 @@ const stadiumController = {
         }
     },
 
-    // Search restaurants
+
+// Search restaurants
+searchRestaurants: async (req, res) => {
+    try {
+        // Helper to safely get parameters from POST or GET
+        const getParam = (name) => ((req.body?.[name]) || req.query[name] || "").trim();
+
+        // Query Parameters
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 15;
+        const category = getParam('category') || "";
+        const sort = getParam('sort') || "rating_desc";
+        const league = getParam('league');
+        const team = getParam('team');
+        const stadium = getParam('stadium');
+
+        // Require at least one search criteria
+        if (!league && !team && !stadium) {
+            return res.render('results', {
+                title: 'Search Results',
+                error: 'Please provide at least one search criteria (league, team, or stadium)',
+                restaurants: [],
+                searchCount: 0
+            });
+        }
+
+        console.log('Search criteria:', { league, team, stadium });
+
+        // Build database query
+        const query = {};
+        if (league) query.league = league;
+        if (team) query.team = team;
+        if (stadium && stadium !== 'Stadium information not available') query.stadium = stadium;
+
+        console.log('Database query:', query);
+
+        // Fetch stadium data
+        const stadiumData = await Stadium.findOne(query).maxTimeMS(10000);
+
+        if (!stadiumData) {
+            console.log('No stadium found matching criteria');
+            return res.render('results', {
+                title: 'Search Results - No Matches Found',
+                league,
+                team,
+                stadium: stadium || 'Not specified',
+                restaurants: [],
+                searchCount: 0,
+                message: 'No stadium found matching your search criteria. Please try different selections.'
+            });
+        }
+
+        let restaurants = stadiumData.businesses || [];
+        console.log(`Found ${restaurants.length} restaurants for ${stadiumData.team}`);
+
+        // Populate category dropdown
+        const allCategories = new Set();
+        restaurants.forEach(r => {
+            r.categories?.forEach(c => allCategories.add(c.title));
+        });
+
+        // Filter by category
+        if (category) {
+            const catLower = category.toLowerCase();
+            restaurants = restaurants.filter(b =>
+                b.categories?.some(c =>
+                    c.title.toLowerCase().includes(catLower) ||
+                    c.alias.toLowerCase().includes(catLower)
+                )
+            );
+        }
+
+        // Sort restaurants
+        restaurants.sort((a, b) => {
+            switch (sort) {
+                case "rating_asc": return a.rating - b.rating;
+                case "rating_desc": return b.rating - a.rating;
+                case "reviews_asc": return a.review_count - b.review_count;
+                case "reviews_desc": return b.review_count - a.review_count;
+                case "distance_asc": return a.distance - b.distance;
+                default: return b.rating - a.rating;
+            }
+        });
+
+        // Pagination
+        const totalRestaurants = restaurants.length;
+        const totalPages = Math.ceil(totalRestaurants / limit);
+        const startIndex = (page - 1) * limit;
+        const paginatedRestaurants = restaurants.slice(startIndex, startIndex + limit);
+
+        // Render results
+        res.render('results', {
+            title: `Restaurants Near ${stadiumData.stadium}`,
+            league: stadiumData.league,
+            team: stadiumData.team,
+            stadium: stadiumData.stadium,
+            city: stadiumData.city,
+            state: stadiumData.state,
+            restaurants: paginatedRestaurants,
+            searchCount: totalRestaurants,
+            currentPage: page,
+            totalPages,
+            limit,
+            categories: Array.from(allCategories).sort(),
+            selectedCategory: category,
+            selectedSort: sort,
+            success: `Found ${totalRestaurants} restaurants near ${stadiumData.stadium}`
+        });
+
+    } catch (error) {
+        console.error('Error searching restaurants:', error);
+
+        const leagueSafe = (req.body?.league) || req.query.league || "";
+        const teamSafe = (req.body?.team) || req.query.team || "";
+        const stadiumSafe = (req.body?.stadium) || req.query.stadium || "";
+
+        res.render('results', {
+            title: 'Search Error',
+            league: leagueSafe,
+            team: teamSafe,
+            stadium: stadiumSafe,
+            restaurants: [],
+            searchCount: 0,
+            error: 'Sorry, there was an error processing your search. Please try again.'
+        });
+    }
+},
+
+
+/*
+
+    
     searchRestaurants: async (req, res) => {
         try {
-            const { league, team, stadium } = req.body;
+            // Query Parameters
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 15;
+            const category = req.query.category || "";
+            const sort = req.query.sort || "rating_desc";
+
+            // support both POST (initial search) and GET (pagination/filter)
+            const league = req.body.league || req.query.league || "";
+            const team = req.body.team || req.query.team || "";
+            const stadium = req.body.stadium || req.query.stadium || "";
+
             
             if (!league && !team && !stadium) {
                 return res.render('results', {
@@ -134,15 +275,51 @@ const stadiumController = {
                 });
             }
 
-            const restaurants = stadiumData.businesses || [];
+            let restaurants = stadiumData.businesses || [];
             console.log(`Found ${restaurants.length} restaurants for ${stadiumData.team}`);
 
-            const sortedRestaurants = restaurants.sort((a, b) => {
-                if (b.rating !== a.rating) {
+            // Populate category dropdown with restaurant categories
+            const allCategories = new Set();
+            restaurants.forEach(r => {
+                if (r.categories?.length) {
+                    r.categories.forEach(c => allCategories.add(c.title));
+                }
+            });
+
+            // Filter and sort
+
+            if (category) {
+                const cat = category.toLowerCase();
+                restaurants = restaurants.filter(b =>
+                    b.categories?.some(c =>
+                        c.title.toLowerCase().includes(cat) ||
+                        c.alias.toLowerCase().includes(cat)
+                    )
+                );
+            }
+            
+            restaurants.sort((a, b) => {
+                switch (sort) {
+                    case "rating_asc":
+                        return a.rating - b.rating;
+                    case "rating_desc":
+                        return b.rating - a.rating;
+                    case "reviews_asc":
+                        return a.review_count - b.review_count;
+                    case "reviews_desc":
+                        return b.review_count - a.review_count;
+                    case "distance_asc":
+                        return a.distance - b.distance;
+                default:
                     return b.rating - a.rating;
                 }
-                return b.review_count - a.review_count;
             });
+
+            // Pagination
+            const totalRestaurants = restaurants.length;
+            const totalPages = Math.ceil(totalRestaurants / limit);
+            const startIndex = (page - 1) * limit;
+            const paginatedRestaurants = restaurants.slice(startIndex, startIndex + Number(limit));
 
             res.render('results', {
                 title: `Restaurants Near ${stadiumData.stadium}`,
@@ -151,24 +328,37 @@ const stadiumController = {
                 stadium: stadiumData.stadium,
                 city: stadiumData.city,
                 state: stadiumData.state,
-                restaurants: sortedRestaurants,
-                searchCount: sortedRestaurants.length,
-                success: `Found ${sortedRestaurants.length} restaurants near ${stadiumData.stadium}`
+                restaurants: paginatedRestaurants,
+                searchCount: totalRestaurants,
+                currentPage: page,
+                totalPages,
+                limit,
+                categories: Array.from(allCategories).sort(),
+                selectedCategory: category,
+                selectedSort: sort,
+                success: `Found ${totalRestaurants} restaurants near ${stadiumData.stadium}`
             });
 
         } catch (error) {
             console.error('Error searching restaurants:', error);
+            
+            const league = (req.body && req.body.league) || req.query.league || "";
+            const team = (req.body && req.body.team) || req.query.team || "";
+            const stadium = (req.body && req.body.stadium) || req.query.stadium || "";
+
             res.render('results', {
                 title: 'Search Error',
-                league: req.body.league,
-                team: req.body.team,
-                stadium: req.body.stadium,
+                league,
+                team,
+                stadium,
                 restaurants: [],
                 searchCount: 0,
                 error: 'Sorry, there was an error processing your search. Please try again.'
             });
         }
     },
+    */
+
 
     // Search by stadium name
     searchByStadiumName: async (req, res) => {

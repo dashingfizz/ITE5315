@@ -66,7 +66,4 @@ router.get("/business/statistics", ensureAuth, (req, res) => {
   });
 });
 
-
-
-
 module.exports = router;

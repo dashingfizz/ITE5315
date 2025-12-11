@@ -79,6 +79,20 @@ hbs.registerHelper('exists', function(value) {
     return value !== null && value !== undefined && value !== '';
 });
 
+hbs.registerHelper("ifeq", (a, b, opts) =>
+    a == b ? opts.fn(this) : opts.inverse(this)
+);
+
+hbs.registerHelper("eq", (a, b) => a === b);
+hbs.registerHelper("add", (a, b) => a + b);
+hbs.registerHelper("subtract", (a, b) => a - b);
+
+hbs.registerHelper("range", (start, end) => {
+    let array = [];
+    for (let i = start; i <= end; i++) array.push(i);
+    return array;
+});
+
 // Session middleware
 app.use(
   session({

@@ -24,6 +24,9 @@ router.get('/stadium/:team', stadiumController.getStadiumByTeam);
 // Get stadium details by team 
 router.get('/stadium-details/:team', stadiumController.getStadiumDetailsByTeam);
 
+// Search restaurants/pagination
+router.get('/search', stadiumController.searchRestaurants);
+
 // Search restaurants
 router.post('/search', stadiumController.searchRestaurants);
 
