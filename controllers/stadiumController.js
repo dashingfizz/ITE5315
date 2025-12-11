@@ -324,12 +324,19 @@ const stadiumController = {
             const userId = req.session.user ? req.session.user._id : 'anonymous';
             const businessId = `user-${userId}-${Date.now()}`;
 
+            let imageUrl = '';
+            if (req.file) {
+            imageUrl = '/uploads/' + req.file.filename;  
+            } else if (req.body.image_url) {
+            imageUrl = req.body.image_url.trim();
+            } 
+
             // Create new business object matching the schema
             const newBusiness = {
                 id: businessId,
                 alias: alias,
                 name: name,
-                image_url: '',
+                image_url: imageUrl,
                 is_closed: false,
                 url: url || '',
                 review_count: parseInt(review_count) || 0,
@@ -443,72 +450,148 @@ const stadiumController = {
         }
     },
 
-    // Update user's business
-    updateBusiness: async (req, res) => {
-        try {
-            const { businessId } = req.params;
-            const updates = req.body;
-            const userId = req.session.user ? req.session.user._id : null;
+   // Update user's business
+updateBusiness: async (req, res) => {
+  try {
+    const { businessId } = req.params;
+    const userId = req.session.user ? req.session.user._id : null;
 
-            if (!userId) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'User not authenticated'
-                });
-            }
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
 
-            // Find stadium containing this business
-            const stadium = await Stadium.findOne({
-                'businesses.id': businessId,
-                'businesses.createdBy': userId
-            });
+    // Find stadium containing this business created by this user
+    const stadium = await Stadium.findOne({
+      'businesses.id': businessId,
+      'businesses.createdBy': userId
+    });
 
-            if (!stadium) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Business not found or you do not have permission to edit it.'
-                });
-            }
+    if (!stadium) {
+      return res.status(404).json({
+        success: false,
+        message: 'Business not found or you do not have permission to edit it.'
+      });
+    }
 
-            // Find the business index
-            const businessIndex = stadium.businesses.findIndex(b => 
-                b.id === businessId && b.createdBy.toString() === userId.toString()
-            );
+    // Find the business index
+    const businessIndex = stadium.businesses.findIndex(b =>
+      b.id === businessId &&
+      b.createdBy &&
+      b.createdBy.toString() === userId.toString()
+    );
 
-            if (businessIndex === -1) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Business not found or you do not have permission to edit it.'
-                });
-            }
+    if (businessIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Business not found or you do not have permission to edit it.'
+      });
+    }
 
-            // Update the business with new values
-            const updatedBusiness = {
-                ...stadium.businesses[businessIndex].toObject(),
-                ...updates,
-                updatedAt: new Date()
-            };
+    const b = stadium.businesses[businessIndex];
+    const body = req.body || {};
 
-            // Replace the business in the array
-            stadium.businesses[businessIndex] = updatedBusiness;
-            
-            await stadium.save();
+    // ---- Image update (optional) ----
+     if (req.file) {
+    // new uploaded image
+    b.image_url = '/uploads/' + req.file.filename;
+    } else if (body.image_url) {
+    // or plain URL typed by user in form
+    b.image_url = body.image_url.trim();
+    }
 
-            res.status(200).json({
-                success: true,
-                message: 'Business updated successfully!',
-                business: updatedBusiness
-            });
 
-        } catch (error) {
-            console.error('Error updating business:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Error updating business',
-                error: error.message
-            });
-        }
-    },
+    // -------- Editable simple fields --------
+
+    if (typeof body.name === 'string') {
+      b.name = body.name.trim();
+    }
+
+    if (typeof body.alias === 'string') {
+      b.alias = body.alias.trim();
+    }
+
+    if (body.rating !== undefined) {
+      const ratingNum = parseFloat(body.rating);
+      if (!isNaN(ratingNum) && ratingNum >= 0 && ratingNum <= 5) {
+        b.rating = ratingNum;
+      }
+    }
+
+    if (body.review_count !== undefined) {
+      const rc = parseInt(body.review_count, 10);
+      if (!isNaN(rc) && rc >= 0) {
+        b.review_count = rc;
+      }
+    }
+
+    if (typeof body.price === 'string') {
+      b.price = body.price;
+    }
+
+    if (typeof body.phone === 'string') {
+      const phone = body.phone.trim();
+      b.phone = phone;
+      b.display_phone = phone;
+    }
+
+    if (typeof body.url === 'string') {
+      b.url = body.url.trim();
+    }
+
+    if (body.distance !== undefined) {
+      const dist = parseFloat(body.distance);
+      if (!isNaN(dist) && dist >= 0) {
+        b.distance = dist;
+      }
+    }
+
+    // -------- Address line (but NOT city/state) --------
+    b.location = b.location || {};
+
+    if (typeof body.address1 === 'string') {
+      b.location.address1 = body.address1.trim();
+    }
+
+    if (typeof body.zip_code === 'string') {
+      b.location.zip_code = body.zip_code.trim();
+    }
+
+    // NOTE: we intentionally IGNORE body.city and body.state
+    // Stadium city/state define where this business belongs.
+
+    // Rebuild display_address based on stadium city/state + address1/zip
+    const city = stadium.city || '';
+    const state = stadium.state || '';
+    b.location.display_address = [
+      b.location.address1 || '',
+      `${city}${city && state ? ', ' : ''}${state} ${b.location.zip_code || ''}`.trim()
+    ].filter(Boolean);
+
+    // Timestamp
+    b.updatedAt = new Date();
+
+    await stadium.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Business updated successfully!',
+      business: b
+    });
+
+  } catch (error) {
+    console.error('Error updating business:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error updating business',
+      error: error.message
+    });
+  }
+},
+
+
 
     // Delete user's business
     deleteBusiness: async (req, res) => {

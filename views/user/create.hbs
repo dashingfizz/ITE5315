@@ -16,22 +16,24 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     {{/if}}
-                    
+
                     {{#if success}}
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{success}}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     {{/if}}
-                    
-                    <form id="createBusinessForm" action="/api/business/create" method="POST">
+
+                    <form id="createBusinessForm" action="/api/business/create" method="POST"
+                        enctype="multipart/form-data">
+
                         <div class="row g-3">
                             <!-- Stadium Selection -->
                             <div class="col-12">
                                 <h5 class="mb-3">Stadium Association</h5>
                                 <p class="text-muted small mb-3">Select which stadium this business is near</p>
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="league" class="form-label fw-bold">League *</label>
                                 <select class="form-select" id="league" name="league" required>
@@ -41,37 +43,45 @@
                                     {{/each}}
                                 </select>
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="team" class="form-label fw-bold">Team *</label>
                                 <select class="form-select" id="team" name="team" required>
                                     <option value="">Select team...</option>
                                 </select>
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="stadium" class="form-label fw-bold">Stadium *</label>
                                 <input type="text" class="form-control" id="stadium" name="stadium" readonly required>
                                 <div class="form-text">Stadium will auto-populate</div>
                             </div>
-                            
+
                             <!-- Business Basic Info -->
                             <div class="col-12 mt-4">
                                 <h5 class="mb-3">Business Information</h5>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="name" class="form-label fw-bold">Business Name *</label>
                                 <input type="text" class="form-control" id="name" name="name" required>
                                 <div class="form-text">Official name of your business</div>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="alias" class="form-label fw-bold">Business Alias *</label>
                                 <input type="text" class="form-control" id="alias" name="alias" required>
                                 <div class="form-text">URL-friendly name (e.g., "heirloom-market-bbq-atlanta")</div>
                             </div>
-                            
+
+                            <div class="col-md-6">
+                                <label for="image" class="form-label fw-bold">Business Image</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                <div class="form-text">Optional. JPG/PNG, up to 2MB.</div>
+                            </div>
+
+
+
                             <div class="col-md-4">
                                 <label for="rating" class="form-label fw-bold">Rating *</label>
                                 <select class="form-select" id="rating" name="rating" required>
@@ -87,12 +97,13 @@
                                     <option value="5">5 Stars</option>
                                 </select>
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="review_count" class="form-label fw-bold">Review Count</label>
-                                <input type="number" class="form-control" id="review_count" name="review_count" min="0" value="0">
+                                <input type="number" class="form-control" id="review_count" name="review_count" min="0"
+                                    value="0">
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="price" class="form-label fw-bold">Price Level</label>
                                 <select class="form-select" id="price" name="price">
@@ -103,52 +114,53 @@
                                     <option value="$$$$">$$$$ - Very Expensive</option>
                                 </select>
                             </div>
-                            
+
                             <!-- Contact Information -->
                             <div class="col-12 mt-4">
                                 <h5 class="mb-3">Contact Information</h5>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="phone" class="form-label fw-bold">Phone Number</label>
                                 <input type="tel" class="form-control" id="phone" name="phone">
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="url" class="form-label fw-bold">Website URL</label>
                                 <input type="url" class="form-control" id="url" name="url" placeholder="https://">
                             </div>
-                            
+
                             <!-- Location Information -->
                             <div class="col-12 mt-4">
                                 <h5 class="mb-3">Location Information</h5>
                             </div>
-                            
+
                             <div class="col-md-8">
                                 <label for="address1" class="form-label fw-bold">Street Address</label>
                                 <input type="text" class="form-control" id="address1" name="address1">
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="distance" class="form-label fw-bold">Distance (miles)</label>
-                                <input type="number" class="form-control" id="distance" name="distance" step="0.1" min="0" value="0.5">
+                                <input type="number" class="form-control" id="distance" name="distance" step="0.1"
+                                    min="0" value="0.5">
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="city" class="form-label fw-bold">City</label>
                                 <input type="text" class="form-control" id="city" name="city">
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="state" class="form-label fw-bold">State</label>
                                 <input type="text" class="form-control" id="state" name="state">
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="zip_code" class="form-label fw-bold">ZIP Code</label>
                                 <input type="text" class="form-control" id="zip_code" name="zip_code">
                             </div>
-                            
+
                             <!-- Submit Button -->
                             <div class="col-12 mt-5">
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-center">
@@ -172,23 +184,23 @@
 
 <script>
     // Dynamic team loading based on league selection
-    document.getElementById('league').addEventListener('change', async function() {
+    document.getElementById('league').addEventListener('change', async function () {
         const league = this.value;
         const teamSelect = document.getElementById('team');
         const stadiumInput = document.getElementById('stadium');
-        
+
         // Reset selects
         teamSelect.innerHTML = '<option value="">Select team...</option>';
         stadiumInput.value = '';
-        
+
         if (league) {
             teamSelect.disabled = true;
             teamSelect.innerHTML = '<option value="">Loading teams...</option>';
-            
+
             try {
-                const response = await fetch(`/api/teams/${encodeURIComponent(league)}`);
+                const response = await fetch(`/teams/${encodeURIComponent(league)}`);
                 const data = await response.json();
-                
+
                 teamSelect.innerHTML = '<option value="">Select team...</option>';
                 if (data.teams && data.teams.length > 0) {
                     data.teams.forEach(team => {
@@ -206,30 +218,30 @@
             }
         }
     });
-    
+
     // Dynamic stadium loading based on team selection
-    document.getElementById('team').addEventListener('change', async function() {
+    document.getElementById('team').addEventListener('change', async function () {
         const team = this.value;
         const stadiumInput = document.getElementById('stadium');
         const cityInput = document.getElementById('city');
         const stateInput = document.getElementById('state');
-        
+
         stadiumInput.value = 'Loading...';
         cityInput.value = '';
         stateInput.value = '';
-        
+
         if (team) {
             try {
-                const response = await fetch(`/api/stadium/${encodeURIComponent(team)}`);
+                const response = await fetch(`/stadium/${encodeURIComponent(team)}`);
                 const data = await response.json();
-                
+
                 stadiumInput.value = data.stadium || '';
-                
+
                 // Also fetch stadium details to populate city and state
                 if (data.stadium && data.stadium !== 'Stadium information not available') {
-                    const stadiumResponse = await fetch(`/api/stadium-details/${encodeURIComponent(team)}`);
+                    const stadiumResponse = await fetch(`/stadium-details/${encodeURIComponent(team)}`);
                     const stadiumData = await stadiumResponse.json();
-                    
+
                     if (stadiumData) {
                         if (!cityInput.value && stadiumData.city) {
                             cityInput.value = stadiumData.city;
@@ -247,19 +259,19 @@
             stadiumInput.value = '';
         }
     });
-    
+
     // Form submission with AJAX
-    document.getElementById('createBusinessForm').addEventListener('submit', async function(e) {
+    document.getElementById('createBusinessForm').addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         const form = this;
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerHTML;
-        
+
         // Form validation
         const requiredFields = ['league', 'team', 'stadium', 'name', 'alias', 'rating'];
         let isValid = true;
-        
+
         requiredFields.forEach(field => {
             const input = document.querySelector(`[name="${field}"]`);
             if (!input.value.trim()) {
@@ -269,28 +281,28 @@
                 input.classList.remove('is-invalid');
             }
         });
-        
+
         if (!isValid) {
             alert('Please fill in all required fields marked with *');
             return;
         }
-        
+
         // Show loading state
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
-        
+
         try {
+            // Collect form data (including file)
             const formData = new FormData(form);
+
             const response = await fetch(form.action, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(Object.fromEntries(formData))
+                body: formData // let the browser set multipart/form-data
             });
-            
+
+
             const result = await response.json();
-            
+
             if (result.success) {
                 // Show success message and redirect
                 const successAlert = document.createElement('div');
@@ -300,10 +312,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 form.parentNode.insertBefore(successAlert, form);
-                
+
                 // Redirect after 2 seconds
                 setTimeout(() => {
-                    window.location.href = '/user';
+                    window.location.href = '/user/business/my-businesses';
                 }, 2000);
             } else {
                 // Show error message
@@ -314,13 +326,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 form.parentNode.insertBefore(errorAlert, form);
-                
+
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             }
         } catch (error) {
             console.error('Error submitting form:', error);
-            
+
             const errorAlert = document.createElement('div');
             errorAlert.className = 'alert alert-danger alert-dismissible fade show';
             errorAlert.innerHTML = `
@@ -328,7 +340,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             form.parentNode.insertBefore(errorAlert, form);
-            
+
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnText;
         }

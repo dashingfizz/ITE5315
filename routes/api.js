@@ -14,6 +14,8 @@ const Stadium = require('../models/Stadium');
 const stadiumController = require('../controllers/stadiumController');
 const restaurantController = require("../controllers/restaurantController");
 const { ensureAuth } = require('../middleware/auth');
+const upload = require('../middleware/upload');
+
 
 // IMPORTANT: Since this is mounted as "/api" in app.js,
 // all routes here are automatically prefixed with "/api"
@@ -23,8 +25,16 @@ router.post('/stadium/create', ensureAuth, stadiumController.createStadium);
 // This becomes: POST /api/stadium/create
 
 // Business management API
-router.post('/business/create', ensureAuth, stadiumController.createBusiness);
+router.post('/business/create', ensureAuth,upload.single('image'), stadiumController.createBusiness);
 // This becomes: POST /api/business/create
+
+// Update business with image upload
+router.put('/business/update/:businessId',ensureAuth, upload.single('image'), stadiumController.updateBusiness);
+// This becomes: PUT /api/business/update/:businessId
+
+// Alias: GET /api/business -> getUserBusinesses for logged-in user
+router.get('/business', ensureAuth, stadiumController.getUserBusinesses);
+// This becomes: GET /api/business 
 
 // FIXED: Split into two routes - one with userId, one without
 router.get('/business/user/:userId', ensureAuth, stadiumController.getUserBusinesses);

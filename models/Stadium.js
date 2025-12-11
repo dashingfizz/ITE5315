@@ -19,6 +19,9 @@ const stadiumSchema = new mongoose.Schema({
     radius: String,
     city: String,
     state: String,
+      // NEW: total businesses count
+  total: { type: Number, default: 0 },
+
     businesses: [{
         id: String,
         alias: String,
@@ -50,7 +53,12 @@ const stadiumSchema = new mongoose.Schema({
         },
         phone: String,
         display_phone: String,
-        distance: Number
+        distance: Number,
+
+            travel_time: Number,
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
     }]
 });
 

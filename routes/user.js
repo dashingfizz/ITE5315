@@ -12,6 +12,7 @@ const express = require("express");
 const router = express.Router();
 const { ensureAuth } = require("../middleware/auth");
 const controller = require("../controllers/userController");
+const Stadium = require("../models/Stadium");
 
 // GET /user (user account page)
 router.get("/", ensureAuth, controller.getUserAccount);
@@ -30,5 +31,34 @@ router.post("/change-password", ensureAuth, controller.changePassword);
 
 // Delete password route
 router.delete("/delete-account", ensureAuth, controller.deleteAccount);
+
+// GET /user/business/create  → show Add Business form
+router.get("/business/create", ensureAuth, async (req, res) => {
+  console.log("GET /user/business/create route hit");
+  try {
+    const leagues = await Stadium.distinct("league").maxTimeMS(30000);
+
+    res.render("user/create", {             
+      title: "Add Restaurant Near Stadium",
+      leagues,
+    });
+  } catch (err) {
+    console.error("Error loading create business page:", err);
+    res.render("user/create", {             
+      title: "Add Restaurant Near Stadium",
+      error: "Unable to load leagues. Please try again later.",
+      leagues: [],
+    });
+  }
+});
+
+// My Businesses page (logged-in owner)
+router.get('/business/my-businesses', ensureAuth, (req, res) => {
+  res.render('user/my-businesses', {
+    title: 'My Businesses'
+  });
+});
+
+
 
 module.exports = router;
