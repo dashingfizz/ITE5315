@@ -12,7 +12,6 @@ const express = require('express');
 const router = express.Router();
 const Stadium = require('../models/Stadium');
 const stadiumController = require('../controllers/stadiumController');
-const restaurantController = require("../controllers/restaurantController");
 const { ensureAuth } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
@@ -38,12 +37,6 @@ router.get('/business/stats', ensureAuth, stadiumController.getUserBusinessStats
 router.put('/business/update/:businessId', ensureAuth, stadiumController.updateBusiness);
 
 router.delete('/business/delete/:businessId', ensureAuth, stadiumController.deleteBusiness);
-
-// Get all stadiums
-router.get("/stadiums", restaurantController.getStadiums);
-
-// Get all businesses for a specific stadium
-router.get("/stadiums/:id/restaurants", restaurantController.getRestaurantsbyStadium);
 
 // Get restaurants API
 router.get('/restaurants', async (req, res) => {
