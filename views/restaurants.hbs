@@ -49,14 +49,12 @@
         </div>
     </div>
 
-    <!-- ⬇️ SPINNER GOES HERE (exact location) -->
     <div id="loadingSpinner" class="text-center my-4" style="display:none;">
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <p class="mt-2">Loading businesses...</p>
     </div>
-    <!-- ⬆️ SPINNER -->
 
     <!-- RESULTS WILL BE PLACED HERE -->
     <div id="businessResults" class="row"></div>
@@ -68,6 +66,8 @@
         </nav>
     </div>
 </div>
+
+{{> footer}}
 
 <script>
     async function loadBusinesses(page = 1) {
@@ -135,5 +135,3 @@
         }
     }
 </script>
-
-{{> footer}}
