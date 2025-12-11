@@ -148,12 +148,4 @@ https.createServer(https_options, app).listen(config.https_port, () => {
     console.log(`HTTPS Server running on https://localhost:${config.https_port}`);
 });
 
-/*
-app.listen(config.port, () => {
-    console.log(`Server running on http://localhost:${config.port}`);
-    console.log(`MongoDB: ${config.url}`);
-    console.log(`Partials directory: ${partialsDir}`);
-});
-*/
-
 module.exports = app;
